@@ -38,21 +38,47 @@ export function activate(context: ExtensionContext) {
             workspace.getConfiguration(namespace).update(config, false, true);
         }
     );
-	
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "redm-codelens" is now active!');
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('redm-codelens.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from redm-codelens!');
-	});
+    commandBuilder.registerCommand(
+        COMMAND.OPEN_DOCUMENTATION,
+        (url: string) => {
+            env.openExternal(Uri.parse(url));
+        }
+    );
 
-	context.subscriptions.push(disposable);
+    commandBuilder.registerCommand(
+        {
+            identifier: COMMAND.TOGGLE_NATIVE_METHOD_CODE_LENS,
+            type: COMMAND_TYPE.TEXT_EDITOR,
+        },
+        async (
+            textEditor: TextEditor, edit: TextEditorEdit, 
+            identifier: string, isLongNativeMethod: boolean, cb: Function
+        ) => {
+            const lastLine = textEditor.document.lineCount - 1;
+            const { isDirty, isUntitled } = textEditor.document;
+            const { range, text } : {
+                range: Range,
+                text: string
+            } = textEditor.document.lineAt(lastLine);
+    
+            
+            if (!isLongNativeMethod) {
+                expandedCodeLenses.push(identifier);
+            } else {
+                const index = expandedCodeLenses.indexOf(identifier);
+                if (index !== -1) expandedCodeLenses.splice(index, 1);
+            }
+
+            cb();
+        }
+    );
+
+    const disposables = commandBuilder.getDisposables();
+
+    for(const disposable of disposables) {
+        context.subscriptions.push(disposable);
+    }
 }
 
 // this method is called when your extension is deactivated
