@@ -1,8 +1,13 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import { CodelensProvider, kebabCase, expandedCodeLenses } from './CodelensProvider';
+import { compatibleFilesSelector } from './selectors/NativesSelectors';
 
-// this method is called when your extension is activated
+export function activate(context: ExtensionContext) {
+
+    const codelensProvider: CodeLensProvider = new CodelensProvider();
+    const codelensSelector: DocumentSelector = compatibleFilesSelector;
+
+    languages.registerCodeLensProvider(codelensSelector, codelensProvider);
+    
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 	

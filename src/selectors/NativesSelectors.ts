@@ -1,0 +1,10 @@
+export const compatibleFilesSelector = [
+    { language: 'typescript', scheme: 'file' },
+    { language: 'javascript', scheme: 'file' },
+    { language: 'lua', scheme: 'file' },
+    { language: 'csharp', scheme: 'file' },
+    { language: 'typescript', scheme: 'untitled' },
+    { language: 'javascript', scheme: 'untitled' },
+    { language: 'lua', scheme: 'untitled' },
+    { language: 'csharp', scheme: 'untitled' }
+];
