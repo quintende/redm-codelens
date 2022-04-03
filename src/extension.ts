@@ -1,15 +1,30 @@
+import CommandBuilder, { COMMAND, COMMAND_TYPE } from './commands/CommandBuilder';
 import { CodelensProvider, kebabCase, expandedCodeLenses } from './CodelensProvider';
 import { compatibleFilesSelector } from './selectors/NativesSelectors';
 
 export function activate(context: ExtensionContext) {
+
+
+    const commandBuilder: CommandBuilder = new CommandBuilder();
 
     const codelensProvider: CodeLensProvider = new CodelensProvider();
     const codelensSelector: DocumentSelector = compatibleFilesSelector;
 
     languages.registerCodeLensProvider(codelensSelector, codelensProvider);
     
-// your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+    commandBuilder.registerCommand(
+        COMMAND.ENABLE,
+        (namespace: string, config: string) => {
+            workspace.getConfiguration(namespace).update(config, true, true);
+        }
+    );
+
+    commandBuilder.registerCommand(
+        COMMAND.DISABLE,
+        (namespace: string, config: string) => {
+            workspace.getConfiguration(namespace).update(config, false, true);
+        }
+    );
 	
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated

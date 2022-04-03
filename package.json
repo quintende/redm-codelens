@@ -10,16 +10,31 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:redm-codelens.helloWorld"
+		"onCommand:redm-codelens.enable",
+		"onCommand:redm-codelens.disable"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "redm-codelens.helloWorld",
-				"title": "Hello World"
+				"title": "Enable",
+				"command": "redm-codelens.enable",
+				"category": "RedM Natives CodeLens"
+			},
+			{
+				"title": "Disable",
+				"command": "redm-codelens.disable",
+				"category": "RedM Natives CodeLens"
 			}
-		]
+		],
+		"configuration": {
+			"properties": {
+				"redm-codelens.enableCodeLens": {
+					"type": "boolean",
+					"default": true
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
