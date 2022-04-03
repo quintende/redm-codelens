@@ -1,9 +1,22 @@
+import { ExtensionContext, env, Uri, languages, commands, Disposable, workspace, window, DocumentSelector, CodeLensProvider, Range, TextEditor, TextEditorEdit, Position, CodeLens, Command } from 'vscode';
 import CommandBuilder, { COMMAND, COMMAND_TYPE } from './commands/CommandBuilder';
+import { EVENT, NativeMethodsRepository } from './NativeMethodsRepository';
 import { CodelensProvider, kebabCase, expandedCodeLenses } from './CodelensProvider';
 import { compatibleFilesSelector } from './selectors/NativesSelectors';
 
 export function activate(context: ExtensionContext) {
 
+    const nativeMethodsRepository = new NativeMethodsRepository(context);
+
+    nativeMethodsRepository
+        .on(EVENT.NATIVES_FETCH_FAILED,
+            () => { window.showErrorMessage( "Failed to fetch native methods." ) })
+        .on(EVENT.NATIVES_FETCH_FALLBACK,
+            (date: string) => { window.showWarningMessage( `Failed to fetch updated native methods. Will use fallback to natives from ${date}.` ) })
+        .on(EVENT.NATIVES_FETCH_SUCCESS,
+            () => { window.showInformationMessage( "Native methods fetched successfully." ) })
+        .on(EVENT.NATIVES_FETCH_UPDATED,
+            () => { window.showInformationMessage( "Native methods updated successfully." ) });
 
     const commandBuilder: CommandBuilder = new CommandBuilder();
 
