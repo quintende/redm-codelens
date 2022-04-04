@@ -46,10 +46,10 @@ export class CodelensProvider implements vscode.CodeLensProvider {
     constructor() {
         // Move
         this.nativeInvokers = {
-            lua: /Citizen\.InvokeNative\((.*),/g,
-            csharp: /Function\.Call<?.*>?\(\(Hash\)(.*),/g,
-            javascript: /Citizen\.invokeNative\((.*),/g,
-            typescript: /Citizen\.invokeNative\((.*),/g
+            lua: /Citizen\.InvokeNative\((.*?)[,)]/g,
+            csharp: /Function\.Call<?(.*?)>?\(\(Hash\)(.*?)[,)]/g,
+            javascript: /Citizen\.invokeNative\((.*?)[,)]/g,
+            typescript: /Citizen\.invokeNative<?(.*?)>?\((.*?)[,)]/g
         };
 
         this.nativeMethodsRepository = new NativeMethodsRepository();
