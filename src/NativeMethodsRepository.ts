@@ -163,12 +163,20 @@ export class NativeMethodsRepository {
     }
 
     public on(event: EVENT, cb: (data: any) => void) {
-        this.events[event] = cb;
+        if (!this.events[event]) {
+            this.events[event] = [];
+        }
+
+        this.events[event].push(cb);
 
         return this;
     }
 
     public trigger(event: EVENT, ...args: any[]) {
-        if (this.events[event]) this.events[event](...args);
+        if (this.events[event]) {
+            for (const cb of this.events[event]) {
+                cb(...args);
+            }
+        }
     }
 }
