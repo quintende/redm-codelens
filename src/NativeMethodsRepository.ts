@@ -154,8 +154,9 @@ export class NativeMethodsRepository {
             const nativeMethod = this.storageManager.getValue<NativeMethod>(hash, null);
             
             if (nativeMethod) {
-            this.cache.set(hash, nativeMethod);
-            return nativeMethod;
+                this.cache.set(hash, nativeMethod);
+                
+                return nativeMethod;
             }
         }
 
