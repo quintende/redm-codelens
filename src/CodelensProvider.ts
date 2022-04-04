@@ -4,7 +4,7 @@ import CollapsedNativeMethodCodeLens from './codelens/CollapsedNativeMethodCodeL
 import ExpandedNativeMethodCodeLens from './codelens/ExpandedNativeMethodCodeLens';
 import NativeDocumentationCodeLens from './codelens/NativeDocumentationCodeLens';
 import SimpleTextCodeLens from './codelens/SimpleTextCodeLens';
-import { NativeMethodsRepository } from './NativeMethodsRepository';
+import { EVENT, NativeMethodsRepository } from './NativeMethodsRepository';
 
 /**
  * CodelensProvider
@@ -31,6 +31,8 @@ interface NativeInvokers {
     javascript: RegExp
 }
 
+const exec = (fn: Function) => fn();
+
 export const expandedCodeLenses: string[] = [];
 
 export class CodelensProvider implements vscode.CodeLensProvider {
@@ -52,14 +54,9 @@ export class CodelensProvider implements vscode.CodeLensProvider {
 
         this.nativeMethodsRepository = new NativeMethodsRepository();
 
-        
-        vscode.window.onDidChangeTextEditorVisibleRanges((_) => {
-            this._onDidChangeCodeLenses.fire();
-        });
-
-        vscode.workspace.onDidChangeConfiguration((_) => {
-            this._onDidChangeCodeLenses.fire();
-        });
+        this.nativeMethodsRepository.on(EVENT.NATIVES_FETCH_SUCCESS, exec(this._onDidChangeCodeLenses.fire));
+        vscode.window.onDidChangeTextEditorVisibleRanges(exec(this._onDidChangeCodeLenses.fire));
+        vscode.workspace.onDidChangeConfiguration(exec(this._onDidChangeCodeLenses.fire));
     }
 
     public provideCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
@@ -107,7 +104,6 @@ export class CodelensProvider implements vscode.CodeLensProvider {
                             this.codeLenses.push(
                                 new SimpleTextCodeLens(range, "...")
                             );
-
 
                             continue;
                         }

@@ -155,7 +155,7 @@ export class NativeMethodsRepository {
             
             if (nativeMethod) {
                 this.cache.set(hash, nativeMethod);
-                
+
                 return nativeMethod;
             }
         }
