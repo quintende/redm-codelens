@@ -1,7 +1,18 @@
-import { ExtensionContext, env, Uri, languages, commands, Disposable, workspace, window, DocumentSelector, CodeLensProvider, Range, TextEditor, TextEditorEdit, Position, CodeLens, Command } from 'vscode';
+import {
+    ExtensionContext,
+    env,
+    Uri,
+    languages,
+    workspace,
+    window,
+    DocumentSelector,
+    CodeLensProvider,
+    TextEditor,
+    TextEditorEdit 
+} from 'vscode';
 import CommandBuilder, { COMMAND, COMMAND_TYPE } from './commands/CommandBuilder';
 import { EVENT, NativeMethodsRepository } from './NativeMethodsRepository';
-import { CodelensProvider, kebabCase, expandedCodeLenses } from './CodelensProvider';
+import { CodelensProvider, expandedCodeLenses } from './CodelensProvider';
 import { compatibleFilesSelector } from './selectors/NativesSelectors';
 
 export function activate(context: ExtensionContext) {
@@ -54,15 +65,7 @@ export function activate(context: ExtensionContext) {
         async (
             textEditor: TextEditor, edit: TextEditorEdit, 
             identifier: string, isLongNativeMethod: boolean, cb: Function
-        ) => {
-            const lastLine = textEditor.document.lineCount - 1;
-            const { isDirty, isUntitled } = textEditor.document;
-            const { range, text } : {
-                range: Range,
-                text: string
-            } = textEditor.document.lineAt(lastLine);
-    
-            
+        ) => {   
             if (!isLongNativeMethod) {
                 expandedCodeLenses.push(identifier);
             } else {

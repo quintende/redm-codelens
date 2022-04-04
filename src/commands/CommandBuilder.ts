@@ -1,4 +1,4 @@
-import { CodeLens, Disposable, commands, Range } from 'vscode';
+import { Disposable, commands } from 'vscode';
 
 export enum COMMAND {
   ENABLE = 'enable',

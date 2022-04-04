@@ -4,7 +4,7 @@ import CollapsedNativeMethodCodeLens from './codelens/CollapsedNativeMethodCodeL
 import ExpandedNativeMethodCodeLens from './codelens/ExpandedNativeMethodCodeLens';
 import NativeDocumentationCodeLens from './codelens/NativeDocumentationCodeLens';
 import SimpleTextCodeLens from './codelens/SimpleTextCodeLens';
-import { NativeMethod, NativeMethodsRepository } from './NativeMethodsRepository';
+import { NativeMethodsRepository } from './NativeMethodsRepository';
 
 /**
  * CodelensProvider
@@ -62,7 +62,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
         });
     }
 
-    public provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
+    public provideCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
 
         //console.log('outs : creating provider for ', document.languageId);
         const visibleRanges: readonly Range[] | undefined = window?.activeTextEditor?.visibleRanges;
@@ -96,12 +96,14 @@ export class CodelensProvider implements vscode.CodeLensProvider {
 
                     if (!range || !visibleRanges)  continue;
 
-                    if (!visibleRanges.some((visibleRange: Range) => visibleRange.contains(range))) {
+                    const isRangeVisible = visibleRanges.some((visibleRange: Range) => visibleRange.contains(range));
+
+                    if (!isRangeVisible) {
                             this.codeLenses.push(
                                 new NativeDocumentationCodeLens(range, hash)
                             );
 
-                            // placeholder
+                            // placeholder when using large files
                             this.codeLenses.push(
                                 new SimpleTextCodeLens(range, "...")
                             );
@@ -110,37 +112,25 @@ export class CodelensProvider implements vscode.CodeLensProvider {
                             continue;
                         }
 
-                    if (range && visibleRanges
-                        && visibleRanges.some(
-                            (visibleRange: Range) => visibleRange.contains(range)
-                        )) {
+                    this.codeLenses.push(
+                        new NativeDocumentationCodeLens(range, hash)
+                    );
+
+                    const data = this.nativeMethodsRepository.get(hash);
+
+                    if (!data) {
                         this.codeLenses.push(
-                            new NativeDocumentationCodeLens(range, hash)
+                            new SimpleTextCodeLens(range, "No native method found")
                         );
 
-                        //console.clear();
-                        console.log('huh?')
-                        console.time('get native method via map');
-                        const data = this.nativeMethodsRepository.get(hash);
-                        console.timeEnd('get native method via map');
-                        console.log(data.name);
-
-                        if (!data) {
-                            this.codeLenses.push(
-                                new SimpleTextCodeLens(range, "No native method found")
-                            );
-
-                            continue;
-                        }
-
-                        this.codeLenses.push(
-                            isExpanded
-                                ? new ExpandedNativeMethodCodeLens(range, identifier, data, () => { this._onDidChangeCodeLenses.fire(); })
-                                : new CollapsedNativeMethodCodeLens(range, identifier, data, () => { this._onDidChangeCodeLenses.fire(); })
-                        );
-
-
+                        continue;
                     }
+
+                    this.codeLenses.push(
+                        isExpanded
+                            ? new ExpandedNativeMethodCodeLens(range, identifier, data, () => { this._onDidChangeCodeLenses.fire(); })
+                            : new CollapsedNativeMethodCodeLens(range, identifier, data, () => { this._onDidChangeCodeLenses.fire(); })
+                    );
                 }
             }
 
@@ -150,27 +140,13 @@ export class CodelensProvider implements vscode.CodeLensProvider {
         return [];
     }
 
-    // public resolveCodeLens(codeLens: vscode.CodeLens, token: vscode.CancellationToken) {
+    // TODO: Move data fetching to resolve?
+    public resolveCodeLens(codeLens: vscode.CodeLens) {
 
-    //     //console.log(expandedCodeLenses, kebabCase);
+        if (vscode.workspace.getConfiguration("redm-codelens").get("enableCodeLens", true)) {
+            return codeLens;
+        }
 
-
-    //     if (vscode.workspace.getConfiguration("redm-codelens").get("enableCodeLens", true)) {
-    //         console.log('resolving provider for ', codeLens);
-
-    //         // codeLens.command = {
-    //         //     title: "CreateObject(...) : void" + new Date().getTime(),
-    //         //     //title: "CreateObject(modelHash: Hash, x: number, y: number, z: number, isNetwork: boolean, netMissionEntity: boolean, doorFlag: boolean)",
-    //         //     tooltip: "Click to expand parameters",
-    //         //     command: "redm-codelens.refreshCodeLens",
-    //         // };
-
-    //         // setTimeout(() => {
-    //         //     //this._onDidChangeCodeLenses.fire();
-    //         // });
-
-    //         return codeLens;
-    //     }
-    //     return null;
-    // }
+        return null;
+     }
 }
