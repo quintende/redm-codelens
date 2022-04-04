@@ -134,6 +134,7 @@ export class NativeMethodsRepository {
 
         if (response === STORAGE_STATE.STALE) {
             this.trigger(EVENT.NATIVES_FETCH_UPDATED);
+            this.cache = new Map<string, NativeMethod>();
         }
 
         if (response === STORAGE_STATE.CACHED) {
