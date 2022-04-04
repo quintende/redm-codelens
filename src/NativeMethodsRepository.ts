@@ -90,7 +90,7 @@ export class NativeMethodsRepository {
         if (cfxError) throw cfxError;
 
         const responseHash = `${hash(rdrResponse.data)}-${hash(cfxResponse.data)}`;
-        const cachedHash = this.storageManager?.getValue<string>('hash');
+        const cachedHash = this.storageManager?.getValue<string>('hash', null);
 
         logger(`Fetched data with content hash: ${responseHash}`);
 
@@ -103,7 +103,7 @@ export class NativeMethodsRepository {
         this.parseAndSaveNatives(rdrResponse.data);
         this.parseAndSaveNatives(cfxResponse.data);
         
-        return cachedHash === undefined ? STORAGE_STATE.NEW : STORAGE_STATE.STALE;
+        return cachedHash === null ? STORAGE_STATE.NEW : STORAGE_STATE.STALE;
     }
 
     async initialiseRepository(storage: Memento) {
@@ -150,10 +150,12 @@ export class NativeMethodsRepository {
         }
 
         if (!this.cache.has(hash)) {
-            const nativeMethod = this.storageManager.getValue<NativeMethod>(hash);
+            const nativeMethod = this.storageManager.getValue<NativeMethod>(hash, null);
+            
+            if (nativeMethod) {
             this.cache.set(hash, nativeMethod);
-
             return nativeMethod;
+            }
         }
 
         return this.cache.get(hash) as NativeMethod;

@@ -2,6 +2,8 @@
 
 import { Memento } from "vscode";
 
+type DynamicType = any;
+
 export class LocalStorageService {
     private storage: Memento;
 
@@ -9,8 +11,8 @@ export class LocalStorageService {
         this.storage = storage;
     }   
     
-    public getValue<T>(key : string) : T {
-        return this.storage.get<T>(key, {} as T);
+    public getValue<T>(key : string, defaultValue: DynamicType = {}) : T {
+        return this.storage.get<T>(key, defaultValue as T);
     }
 
     public setValue<T>(key : string, value : T){
