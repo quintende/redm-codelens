@@ -1,66 +1,89 @@
 {
-	"name": "redm-codelens",
-	"displayName": "redm-codelens",
-	"description": "Provides CodeLens for RDR2 Native invokations in RedM lua, javascript and c# code",
-	"version": "0.0.1",
-	"engines": {
-		"vscode": "^1.66.0"
-	},
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [
-		"onCommand:redm-codelens.enable",
-		"onCommand:redm-codelens.disable"
-	],
-	"main": "./out/extension.js",
-	"contributes": {
-		"commands": [
-			{
-				"title": "Enable",
-				"command": "redm-codelens.enable",
-				"category": "RedM Natives CodeLens"
-			},
-			{
-				"title": "Disable",
-				"command": "redm-codelens.disable",
-				"category": "RedM Natives CodeLens"
-			}
-		],
-		"configuration": {
-			"properties": {
-				"redm-codelens.enableCodeLens": {
-					"type": "boolean",
-					"default": true
-				}
-			}
-		}
-	},
-	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
-		"pretest": "npm run compile && npm run lint",
-		"lint": "eslint src --ext ts",
-		"test": "node ./out/test/runTest.js"
-	},
-	"devDependencies": {
-		"@types/vscode": "^1.66.0",
-		"@types/glob": "^7.2.0",
-		"@types/mocha": "^9.1.0",
-		"@types/node": "14.x",
-		"@typescript-eslint/eslint-plugin": "^5.16.0",
-		"@typescript-eslint/parser": "^5.16.0",
-		"eslint": "^8.11.0",
-		"glob": "^7.2.0",
-		"mocha": "^9.2.2",
-		"typescript": "^4.5.5",
-		"@vscode/test-electron": "^2.1.3"
-	},
-	"dependencies": {
-		"@types/object-hash": "^2.2.1",
-		"await-to-js": "^3.0.0",
-		"axios": "^0.26.1",
-		"object-hash": "^3.0.0"
-	}
+    "name": "redm-codelens",
+    "description": "Provides CodeLens for RDR2 Native invokations in RedM lua, javascript and c# code",
+    "publisher": "quintend",
+    "author": {
+        "name": "quinten"
+    },
+    "license": "SEE LICENSE IN LICENSE.txt",
+    "bugs": {
+        "url": "https://github.com/quintende/redm-codelens/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/quintende/redm-codelens.git"
+    },
+    "homepage": "https://github.com/quintende/redm-codelens/blob/master/README.md",
+    "engines": {
+        "vscode": "^1.66.0"
+    },
+    "version": "0.0.1",
+    "main": "./out/extension.js",
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile && npm run lint",
+        "lint": "eslint src --ext ts",
+        "test": "node ./out/test/runTest.js"
+    },
+    "dependencies": {
+        "@types/object-hash": "^2.2.1",
+        "await-to-js": "^3.0.0",
+        "axios": "^0.26.1",
+        "object-hash": "^3.0.0"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.66.0",
+        "@types/glob": "^7.2.0",
+        "@types/mocha": "^9.1.0",
+        "@types/node": "14.x",
+        "@typescript-eslint/eslint-plugin": "^5.16.0",
+        "@typescript-eslint/parser": "^5.16.0",
+        "eslint": "^8.11.0",
+        "glob": "^7.2.0",
+        "mocha": "^9.2.2",
+        "typescript": "^4.5.5",
+        "@vscode/test-electron": "^2.1.3"
+    },
+    "_": "Extension manifest properties",
+    "displayName": "RedM CodeLens",
+    "icon": "images/icon.png",
+    "galleryBanner": {
+        "color": "#C80000",
+        "theme": "dark"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onLanguage:typescript",
+        "onLanguage:javascript",
+        "onLanguage:lua",
+        "onLanguage:csharp",
+        "onCommand:redm-codelens.enable",
+        "onCommand:redm-codelens.disable"
+    ],
+    "contributes": {
+        "commands": [
+            {
+                "title": "Enable",
+                "command": "redm-codelens.enable",
+                "category": "RedM Natives CodeLens"
+            },
+            {
+                "title": "Disable",
+                "command": "redm-codelens.disable",
+                "category": "RedM Natives CodeLens"
+            }
+        ],
+        "configuration": {
+            "properties": {
+                "redm-codelens.enable": {
+                    "type": "boolean",
+                    "default": true
+                }
+            }
+        }
+    }
 }
