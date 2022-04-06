@@ -1,16 +1,37 @@
-import { CodeLens, Range } from 'vscode';
+import { Range } from 'vscode';
 import { snakeToPascalCase } from '../CodelensProvider';
+import { NativeMethod } from '../NativeMethodsRepository';
+import AbstractNativeMethodCodeLens from './AbstractNativeMethodCodeLens';
 
-export default class CollapsedNativeMethodCodeLens extends CodeLens {
-  constructor(range: Range, identifier: string, data: any, cb?: Function) {
-    const name = snakeToPascalCase(data.name);
-    const return_type = data.return_type;
+export default class CollapsedNativeMethodCodeLens extends AbstractNativeMethodCodeLens {
+  constructor(range: Range, hash: string, identifier: string, showPrefix: boolean, cb?: Function) {
+    super(
+      range,
+      hash,
+      identifier,
+      showPrefix,
+      cb
+    );
 
-    super(range, {
-      title: `${name}(...) : ${return_type}`,
+  }
+
+  resolve(nativeMethod: NativeMethod | undefined) {
+    console.log(nativeMethod);
+    if (!nativeMethod) {
+      return;
+    }
+
+    const { return_type, name } = nativeMethod;
+    const convertedName = snakeToPascalCase(name);
+
+    const prefix = this.showPrefix ? `${this.hash} •` : '';
+      
+    const title = `${prefix}${convertedName}(...) : ${return_type}`;
+    console.log('update with', {title});
+    this.updateCommand({
+      title: title,
       tooltip: 'Click to expand parameters',
-      command: 'redm-codelens.toggleNativeMethodCodeLens',
-      arguments: [identifier, false, cb],
+      command: 'redm-codelens.showExpandedNativeMethodCodeLens' // toggleNativeMethodCodeLens
     });
   }
 }
