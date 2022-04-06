@@ -24,10 +24,10 @@ export default class CollapsedNativeMethodCodeLens extends AbstractNativeMethodC
     const { return_type, name } = nativeMethod;
     const convertedName = snakeToPascalCase(name);
 
-    const prefix = this.showPrefix ? `${this.hash} •` : '';
+    const hash = this.hash.substring(0, 8) + '...';
+    const prefix = this.showPrefix ? `${hash} ~ ` : '';
       
     const title = `${prefix}${convertedName}(...) : ${return_type}`;
-    console.log('update with', {title});
     this.updateCommand({
       title: title,
       tooltip: 'Click to expand parameters',
