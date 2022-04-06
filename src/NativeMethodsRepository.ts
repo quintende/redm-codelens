@@ -8,10 +8,12 @@ import * as hash from 'object-hash';
 
 export interface NativeMethod {
     name: string;
-    params: {
-        name: string;
-        type: string;
-    };
+    params: [
+        {
+            name: string;
+            type: string;
+        }
+    ];
     return_type: string;
 }
 
