@@ -6,6 +6,7 @@ import NativeDocumentationCodeLens from './codelens/NativeDocumentationCodeLens'
 import SimpleTextCodeLens from './codelens/SimpleTextCodeLens';
 import { EVENT, NativeMethodsRepository } from './NativeMethodsRepository';
 import CodeLens from './codelens/AbstractNativeMethodCodeLens';
+import AbstractNativeMethodCodeLens from './codelens/AbstractNativeMethodCodeLens';
 
 /**
  * CodelensProvider
@@ -114,9 +115,21 @@ export class CodelensProvider implements vscode.CodeLensProvider {
                     const isRangeVisible = true; // is broken -> visibleRanges.some((visibleRange: Range) => visibleRange.contains(range));
                     const performanceMode = true;
 
-                    this.codeLenses.push(
-                        new NativeDocumentationCodeLens(range, hash)
-                    );
+                    if (showPrefix) {
+                        for (let i = this.codeLenses.length - 1; i >= 0; i--) {
+                            const codeLens: vscode.CodeLens = this.codeLenses[i];
+    
+                            if (!(codeLens instanceof NativeDocumentationCodeLens)) continue;
+                            
+                            //codeLens.addDocumentationEntry(hash);
+                            break;
+                        }
+                    } else {
+                        this.codeLenses.push(
+                            new NativeDocumentationCodeLens(range, hash)
+                        );
+                    }
+                    
 
                     if (!isRangeVisible && performanceMode) {
                         this.codeLenses.push(
@@ -142,6 +155,17 @@ export class CodelensProvider implements vscode.CodeLensProvider {
                                 );     
                         }
                     })();
+
+                    if (showPrefix) {
+                        for (let i = this.codeLenses.length - 1; i >= 0; i--) {
+                            const codeLens: vscode.CodeLens = this.codeLenses[i];
+    
+                            if (!(codeLens instanceof CollapsedNativeMethodCodeLens || codeLens instanceof ExpandedNativeMethodCodeLens)) continue;
+                            
+                            codeLens.setShowPrefix(true);
+                            break;
+                        }    
+                    }
 
                     this.codeLenses.push(
                         nativeMethodCodeLens
