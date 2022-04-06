@@ -53,4 +53,8 @@ export default abstract class AbstractNativeMethodCodeLens extends OriginalCodeL
   getHash() {
     return this.hash;
   }
+
+  setShowPrefix(showPrefix: boolean) {
+    this.showPrefix = showPrefix;
+  }
 }
