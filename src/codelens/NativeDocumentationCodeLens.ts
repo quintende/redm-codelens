@@ -13,4 +13,19 @@ export default class NativeDocumentationCodeLens extends CodeLens {
       tooltip: url
     });
   }
+  public static isInstance(_instance: any) {
+    return this.name === _instance.constructor.name;
+  }
+
+  update(lineContext: any) {
+    const urls = lineContext.map(({ hash }: LineContextItem) => hash);
+
+    // @ts-ignore
+    this.command = {
+      ... this.command,
+      arguments: [
+        urls.length > 1, urls
+      ]
+    };
+  }
 }
