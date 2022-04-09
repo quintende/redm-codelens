@@ -32,7 +32,10 @@ export default class ExpandedNativeMethodCodeLens extends AbstractNativeMethodCo
     this.updateCommand({
       title: title,
       tooltip: 'Click to collapse parameters',
-      command: 'redm-codelens.showCollapsedNativeMethodCodeLens'
+      command: 'redm-codelens.showCollapsedNativeMethodCodeLens',
+      arguments: [
+        this.identifier, this.cb
+      ]
     });
   }
   

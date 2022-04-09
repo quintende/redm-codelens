@@ -57,23 +57,43 @@ export function activate(context: ExtensionContext) {
         }
     );
 
+    const toggleNativeMethodCodeLens = async (
+        identifier: string, isLongNativeMethod: boolean, cb: Function
+    ) => {   
+        if (!isLongNativeMethod) {
+            expandedCodeLenses.push(identifier);
+        } else {
+            const index = expandedCodeLenses.indexOf(identifier);
+            if (index !== -1) expandedCodeLenses.splice(index, 1);
+        }
+
+        cb();
+    }
+
     commandBuilder.registerCommand(
         {
-            identifier: COMMAND.TOGGLE_NATIVE_METHOD_CODE_LENS,
+            identifier: COMMAND.SHOW_EXPANDED_NATIVE_METHOD_CODE_LENS,
             type: COMMAND_TYPE.TEXT_EDITOR,
         },
         async (
             textEditor: TextEditor, edit: TextEditorEdit, 
-            identifier: string, isLongNativeMethod: boolean, cb: Function
+            identifier: string, cb: Function
         ) => {   
-            if (!isLongNativeMethod) {
-                expandedCodeLenses.push(identifier);
-            } else {
-                const index = expandedCodeLenses.indexOf(identifier);
-                if (index !== -1) expandedCodeLenses.splice(index, 1);
-            }
+            toggleNativeMethodCodeLens(identifier, false, cb);
+        }
+    );
 
-            cb();
+
+    commandBuilder.registerCommand(
+        {
+            identifier: COMMAND.SHOW_COLLAPSED_NATIVE_METHOD_CODE_LENS,
+            type: COMMAND_TYPE.TEXT_EDITOR,
+        },
+        async (
+            textEditor: TextEditor, edit: TextEditorEdit, 
+            identifier: string, cb: Function
+        ) => {   
+            toggleNativeMethodCodeLens(identifier, true, cb);
         }
     );
 
