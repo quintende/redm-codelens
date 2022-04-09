@@ -4,7 +4,8 @@ export enum COMMAND {
   ENABLE = 'enable',
   DISABLE = 'disable',
   OPEN_DOCUMENTATION = 'openDocumentation',
-  TOGGLE_NATIVE_METHOD_CODE_LENS = 'toggleNativeMethodCodeLens'
+  SHOW_EXPANDED_NATIVE_METHOD_CODE_LENS = 'showExpandedNativeMethodCodeLens',
+  SHOW_COLLAPSED_NATIVE_METHOD_CODE_LENS = 'showCollapsedNativeMethodCodeLens'
 }
 
 export enum COMMAND_TYPE {
