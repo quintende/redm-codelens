@@ -41,6 +41,10 @@ export default abstract class AbstractNativeMethodCodeLens extends OriginalCodeL
   
   abstract resolve(nativeMethod: NativeMethod | undefined) : void
 
+  public static isInstance(_instance: any) {
+    return this.name === _instance.constructor.name;
+  }
+
   updateCommand(properties: Partial<Command>) {
     // @ts-ignore
     this.command = {
@@ -49,12 +53,15 @@ export default abstract class AbstractNativeMethodCodeLens extends OriginalCodeL
     };
   }
 
-
   getHash() {
     return this.hash;
   }
 
   setShowPrefix(showPrefix: boolean) {
     this.showPrefix = showPrefix;
+  }
+
+  update(lineContext: any) {
+    this.showPrefix = lineContext.showPrefix;
   }
 }
