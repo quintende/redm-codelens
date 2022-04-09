@@ -1,6 +1,8 @@
 import { CodeLens, Range } from 'vscode';
+import { CustomTextLine, LineContextItem } from './CodeLensContext';
 
 const searchQuery: string = 'https://vespura.com/doc/natives/?_';
+
 
 export default class NativeDocumentationCodeLens extends CodeLens {
   constructor(range: Range, hash: string) {
@@ -8,7 +10,9 @@ export default class NativeDocumentationCodeLens extends CodeLens {
 
     super(range, {
       title: 'Documentation',
-      arguments: [url],
+      arguments: [
+        false, [ url ]
+      ],
       command: 'redm-codelens.openDocumentation',
       tooltip: url
     });

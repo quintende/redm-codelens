@@ -52,8 +52,39 @@ export function activate(context: ExtensionContext) {
 
     commandBuilder.registerCommand(
         COMMAND.OPEN_DOCUMENTATION,
-        (url: string) => {
-            env.openExternal(Uri.parse(url));
+        async (showMultipleMethods: boolean, urls: string[]) => {
+            // `${searchQuery}${hash}`
+
+            const useDefaultUrl = true;
+            const hashTarget = (showMultipleMethods) 
+                ? await window.showQuickPick(
+                    urls.map(url => ({
+                        label: 'GetPlayerId', detail: url, hash: url 
+                    })),
+                    { title: 'Select a Native Method' }
+                )
+                : { hash:  urls[0] };
+
+            if (!hashTarget) return;
+            
+            if (!showMultipleMethods) {
+                env.openExternal(Uri.parse(hashTarget.hash));
+                return;
+            }
+
+            const target = await window.showQuickPick(
+                [
+                    { label: 'Vespura', detail: 'GetPlayerId', description: hashTarget.hash, url: 'https://vespura.com/doc/natives/?_' + hashTarget.hash },
+                    { label: 'Alloc8or', detail: 'GetPlayerId', description: hashTarget.hash, url: 'https://alloc8or.re/rdr3/nativedb/?n=' + hashTarget.hash },
+                    { label: 'RDR2MODS',  detail: 'GetPlayerId',description: hashTarget.hash,  url: 'https://www.rdr2mods.com/nativedb/search/?s=' + hashTarget.hash },
+                ],
+                { title: 'Select which documentation page you want to open' });
+
+            if (!target) {
+                return;
+            }
+
+            env.openExternal(Uri.parse(target.url));
         }
     );
 
