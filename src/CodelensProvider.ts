@@ -8,6 +8,7 @@ import { EVENT, NativeMethodsRepository } from './NativeMethodsRepository';
 import CodeLens from './codelens/AbstractNativeMethodCodeLens';
 import AbstractNativeMethodCodeLens from './codelens/AbstractNativeMethodCodeLens';
 import CodeLensContext, { LineContextItem } from './codelens/CodeLensContext';
+import NativeMethodCodeLensFactory from './codelens/NativeCodeLensFactory';
 
 /**
  * CodelensProvider
@@ -34,7 +35,7 @@ interface NativeInvokers {
     javascript: RegExp;
 }
 
-enum CODELENS_TYPE {
+export enum CODELENS_TYPE {
     EXPANDED,
     COLLAPSED
 }
@@ -57,6 +58,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
     private nativeInvokers: NativeInvokers;
     private _onDidChangeCodeLenses: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
     public nativeMethodsRepository: NativeMethodsRepository;
+    public nativeMethodsCodeLensFactory: NativeMethodCodeLensFactory;
     public readonly onDidChangeCodeLenses: vscode.Event<void> = this._onDidChangeCodeLenses.event;
 
     constructor() {
@@ -69,6 +71,8 @@ export class CodelensProvider implements vscode.CodeLensProvider {
         };
 
         this.nativeMethodsRepository = new NativeMethodsRepository();
+        this.nativeMethodsCodeLensFactory = new NativeMethodCodeLensFactory().addProvider(this);
+
 
         this.nativeMethodsRepository.on(EVENT.NATIVES_FETCH_SUCCESS, proxy(this._onDidChangeCodeLenses.fire));
         vscode.window.onDidChangeTextEditorVisibleRanges(proxy(this._onDidChangeCodeLenses.fire));
@@ -110,34 +114,24 @@ export class CodelensProvider implements vscode.CodeLensProvider {
     }
 
     private provideNativeMethodCodeLens(range: Range, hash: string, identifier: string, showPrefix: boolean) {
-        const codeLensType = expandedCodeLenses.some(id => id === identifier)
+        const type = expandedCodeLenses.some(id => id === identifier)
                                 ? CODELENS_TYPE.EXPANDED
                                 : CODELENS_TYPE.COLLAPSED;
-        
-        const nativeMethodCodeLens = (() => {
-            switch (codeLensType) {
-                case CODELENS_TYPE.EXPANDED:
-                    return new ExpandedNativeMethodCodeLens(
-                        range, hash, identifier, showPrefix, () => { this._onDidChangeCodeLenses.fire() }
-                    );                        
-                case CODELENS_TYPE.COLLAPSED:
-                    return new CollapsedNativeMethodCodeLens(
-                        range, hash, identifier, showPrefix, () => { this._onDidChangeCodeLenses.fire() }
-                    );     
-            }
-        })();
+
+        const codeLens = this.nativeMethodsCodeLensFactory
+                                .addProvider(this)
+                                .addParams(range, hash, identifier, showPrefix)    
+                                .create(type);
 
         if (showPrefix) {
             this.findAndUpdatePreviousCodeLens<AbstractNativeMethodCodeLens>(
                 [ CollapsedNativeMethodCodeLens, ExpandedNativeMethodCodeLens ],
-                {
-                    showPrefix: true
-                }
+                { showPrefix: true }
             );
         }
 
         this.codeLenses.push(
-            nativeMethodCodeLens
+            codeLens
         );
     }
 
@@ -145,7 +139,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
 
         const visibleRanges: readonly Range[] | undefined = window?.activeTextEditor?.visibleRanges;
         const codeLensContext: CodeLensContext = new CodeLensContext();
-        
+
         if (vscode.workspace.getConfiguration("redm-codelens").get("enableCodeLens", true)) {
             this.codeLenses = [];
 
