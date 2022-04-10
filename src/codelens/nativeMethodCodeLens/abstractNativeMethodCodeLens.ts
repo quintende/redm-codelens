@@ -1,5 +1,5 @@
 import { CodeLens as OriginalCodeLens, Command, Range } from 'vscode';
-import { NativeMethod } from '../nativeMethodsRepository';
+import { NativeMethod } from '../../util/nativeMethodsRepository';
 
 export interface ResolvableData {
     hash: string;

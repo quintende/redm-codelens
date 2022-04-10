@@ -12,10 +12,10 @@ import {
     CodeLens
 } from 'vscode';
 import CommandBuilder, { COMMAND, COMMAND_TYPE } from './commands/commandBuilder';
-import { EVENT, NativeMethodsRepository } from './nativeMethodsRepository';
-import { CodelensProvider, expandedCodeLenses } from './codelensProvider';
+import { EVENT, NativeMethodsRepository } from './util/nativeMethodsRepository';
+import { CodelensProvider, expandedCodeLenses } from './providers/codelensProvider';
 import { compatibleFilesSelector } from './selectors/nativesSelectors';
-import AbstractNativeMethodCodeLens from './codelens/abstractNativeMethodCodeLens';
+import AbstractNativeMethodCodeLens from './codelens/nativeMethodCodeLens/abstractNativeMethodCodeLens';
 
 export function activate(context: ExtensionContext) {
 
@@ -123,8 +123,8 @@ export function activate(context: ExtensionContext) {
             type: COMMAND_TYPE.TEXT_EDITOR,
         },
         async (
-            codeLens: CodeLens, textEditor: TextEditor, edit: TextEditorEdit, 
-            identifier: string, triggerProviderCompute: Function
+            textEditor: TextEditor, edit: TextEditorEdit, 
+            codeLens: AbstractNativeMethodCodeLens, identifier: string, triggerProviderCompute: Function
         ) => {   
             toggleNativeMethodCodeLens(identifier, codeLens, true);
             triggerProviderCompute();
