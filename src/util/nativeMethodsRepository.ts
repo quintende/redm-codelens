@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { ExtensionContext, Memento } from 'vscode';
-import { LocalStorageService } from './localStorageService';
+import { LocalStorageService } from '../util/localStorageService';
 import to from 'await-to-js';
 import * as hash from 'object-hash';
 
