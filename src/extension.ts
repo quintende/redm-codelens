@@ -11,11 +11,11 @@ import {
     TextEditorEdit, 
     CodeLens
 } from 'vscode';
-import CommandBuilder, { COMMAND, COMMAND_TYPE } from './commands/CommandBuilder';
-import { EVENT, NativeMethodsRepository } from './NativeMethodsRepository';
-import { CodelensProvider, expandedCodeLenses } from './CodelensProvider';
-import { compatibleFilesSelector } from './selectors/NativesSelectors';
-import AbstractNativeMethodCodeLens from './codelens/AbstractNativeMethodCodeLens';
+import CommandBuilder, { COMMAND, COMMAND_TYPE } from './commands/commandBuilder';
+import { EVENT, NativeMethodsRepository } from './nativeMethodsRepository';
+import { CodelensProvider, expandedCodeLenses } from './codelensProvider';
+import { compatibleFilesSelector } from './selectors/nativesSelectors';
+import AbstractNativeMethodCodeLens from './codelens/abstractNativeMethodCodeLens';
 
 export function activate(context: ExtensionContext) {
 

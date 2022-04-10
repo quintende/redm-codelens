@@ -1,7 +1,7 @@
 import { Range } from "vscode";
-import { CODELENS_TYPE } from "../CodelensProvider";
-import CollapsedNativeMethodCodeLens from "./CollapsedNativeMethodCodeLens";
-import ExpandedNativeMethodCodeLens from "./ExpandedNativeMethodCodeLens";
+import { CODELENS_TYPE } from "../codelensProvider";
+import CollapsedNativeMethodCodeLens from "./collapsedNativeMethodCodeLens";
+import ExpandedNativeMethodCodeLens from "./expandedNativeMethodCodeLens";
 
 type NativeMethodParameters = [range: Range, hash: string, identifier: string, showPrefix: boolean];
 

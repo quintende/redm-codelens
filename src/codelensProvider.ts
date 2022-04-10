@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
 import { Range, TextLine, window } from 'vscode';
-import CollapsedNativeMethodCodeLens from './codelens/CollapsedNativeMethodCodeLens';
-import ExpandedNativeMethodCodeLens from './codelens/ExpandedNativeMethodCodeLens';
-import NativeDocumentationCodeLens from './codelens/NativeDocumentationCodeLens';
-import SimpleTextCodeLens from './codelens/SimpleTextCodeLens';
-import { EVENT, NativeMethodsRepository } from './NativeMethodsRepository';
-import CodeLens from './codelens/AbstractNativeMethodCodeLens';
-import AbstractNativeMethodCodeLens from './codelens/AbstractNativeMethodCodeLens';
-import CodeLensContext, { LineContextItem } from './codelens/CodeLensContext';
-import NativeMethodCodeLensFactory from './codelens/NativeCodeLensFactory';
+import CollapsedNativeMethodCodeLens from './codelens/collapsedNativeMethodCodeLens';
+import ExpandedNativeMethodCodeLens from './codelens/expandedNativeMethodCodeLens';
+import NativeDocumentationCodeLens from './codelens/nativeDocumentationCodeLens';
+import SimpleTextCodeLens from './codelens/simpleTextCodeLens';
+import { EVENT, NativeMethodsRepository } from './nativeMethodsRepository';
+import CodeLens from './codelens/abstractNativeMethodCodeLens';
+import AbstractNativeMethodCodeLens from './codelens/abstractNativeMethodCodeLens';
+import CodeLensContext, { LineContextItem } from './codelens/codeLensContext';
+import NativeMethodCodeLensFactory from './codelens/nativeCodeLensFactory';
 
 /**
  * CodelensProvider
