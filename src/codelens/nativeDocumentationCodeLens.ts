@@ -1,5 +1,5 @@
 import { CodeLens, Range } from 'vscode';
-import { CustomTextLine, LineContextItem } from './CodeLensContext';
+import { CustomTextLine, LineContextItem } from './codeLensContext';
 
 const searchQuery: string = 'https://vespura.com/doc/natives/?_';
 
