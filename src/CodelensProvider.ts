@@ -135,56 +135,55 @@ export class CodelensProvider implements vscode.CodeLensProvider {
 
     public provideCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
 
-        const visibleRanges: readonly Range[] | undefined = window?.activeTextEditor?.visibleRanges;
-        const codeLensContext: CodeLensContext = new CodeLensContext();
-
-        if (vscode.workspace.getConfiguration("redm-codelens").get("enableCodeLens", true)) {
-            this.codeLenses = [];
-
-            const language : Language = document.languageId as Language;
-            const regex = new RegExp(this.nativeInvokers[language]);
-            const text = document.getText();
-            const matches: any = [...text.matchAll(regex)];
-            
-            for (const match of matches) {
-                const [ result, ... matchGroups ] = match;
-                const [ _hash ] = matchGroups;
-
-                const line: TextLine = document.lineAt(document.positionAt(match.index).line);
-                const hash: string = filterHash(_hash);
-                const identifier: string = kebabCase(`${line.lineNumber}-${line.text}`);
-                const iterationContext: LineContextItem = {
-                    hash, identifier
-                };
-                
-                const showPrefix: boolean = codeLensContext.currentLineEquals(line);
-                const context = codeLensContext.updateCurrentLine(line, iterationContext);
-                
-                const position = new vscode.Position(
-                    line.lineNumber,
-                    line.text.indexOf(result)
-                );
-                const range = document.getWordRangeAtPosition(position, regex);
-                
-                if (!range || !visibleRanges)  continue;
-
-                const isRangeVisible = true; // is broken -> visibleRanges.some((visibleRange: Range) => visibleRange.contains(range));
-                const performanceMode = true;
-
-                this.provideDocumentationCodeLens(range, hash, context, showPrefix);
-
-                if (!isRangeVisible && performanceMode) {
-                    this.provideSkeletonCodeLens(range);
-                    continue;
-                }
-
-                this.provideNativeMethodCodeLens(range, hash, identifier, showPrefix);   
-            }
-
-            return this.codeLenses;
+        if (!vscode.workspace.getConfiguration("redm-codelens").get("enableCodeLens", true)) {
+            return [];
         }
 
-        return [];
+        this.codeLenses = [];
+
+        const visibleRanges: readonly Range[] | undefined = window?.activeTextEditor?.visibleRanges;
+        const codeLensContext: CodeLensContext = new CodeLensContext();
+        const language: Language = document.languageId as Language;
+        const regex: RegExp = new RegExp(this.nativeInvokers[language]);
+        const text: string = document.getText();
+        const matches: RegExpMatchArray[] = [...text.matchAll(regex)];
+        
+        for (const match of matches) {
+            const [ result, ... matchGroups ] = match;
+            const [ _hash ] = matchGroups;
+
+            const line: TextLine = document.lineAt(document.positionAt(match.index as number).line);
+            const hash: string = filterHash(_hash);
+            const identifier: string = kebabCase(`${line.lineNumber}-${line.text}`);
+            const iterationContext: LineContextItem = {
+                hash, identifier
+            };
+            
+            const showPrefix: boolean = codeLensContext.currentLineEquals(line);
+            const context = codeLensContext.updateCurrentLine(line, iterationContext);
+            
+            const position = new vscode.Position(
+                line.lineNumber,
+                line.text.indexOf(result)
+            );
+            const range = document.getWordRangeAtPosition(position, regex);
+            
+            if (!range || !visibleRanges)  continue;
+
+            const isRangeVisible = true; // is broken -> visibleRanges.some((visibleRange: Range) => visibleRange.contains(range));
+            const performanceMode = true;
+
+            this.provideDocumentationCodeLens(range, hash, context, showPrefix);
+
+            if (performanceMode &&!isRangeVisible) {
+                this.provideSkeletonCodeLens(range);
+                continue;
+            }
+
+            this.provideNativeMethodCodeLens(range, hash, identifier, showPrefix);   
+        }
+
+        return this.codeLenses;
     }
 
     public resolveCodeLens(codeLens: vscode.CodeLens, token: vscode.CancellationToken) {
