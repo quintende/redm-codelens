@@ -4,19 +4,18 @@ import { NativeMethod } from '../NativeMethodsRepository';
 import AbstractNativeMethodCodeLens from './AbstractNativeMethodCodeLens';
 
 export default class CollapsedNativeMethodCodeLens extends AbstractNativeMethodCodeLens {
-  constructor(range: Range, hash: string, identifier: string, showPrefix: boolean, cb?: Function) {
+  constructor(range: Range, hash: string, identifier: string, showPrefix: boolean, triggerProviderCompute?: Function) {
     super(
       range,
       hash,
       identifier,
       showPrefix,
-      cb
+      triggerProviderCompute
     );
 
   }
 
   resolve(nativeMethod: NativeMethod | undefined) {
-    console.log(nativeMethod);
     if (!nativeMethod) {
       return;
     }
@@ -31,9 +30,9 @@ export default class CollapsedNativeMethodCodeLens extends AbstractNativeMethodC
     this.updateCommand({
       title: title,
       tooltip: 'Click to expand parameters',
-      command: 'redm-codelens.showExpandedNativeMethodCodeLens', // toggleNativeMethodCodeLens
+      command: 'redm-codelens.showExpandedNativeMethodCodeLens',
       arguments: [
-        this.identifier, this.cb
+        this, this.identifier, this.triggerProviderCompute
       ]
     });
   }

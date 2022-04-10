@@ -50,7 +50,7 @@ type Language = 'lua' | 'csharp' | 'typescript' | 'javascript';
 
 const filterHash = (hash: string) => hash.replace(/['"`]+/g, '');
 
-export const expandedCodeLenses: string[] = [];
+export const expandedCodeLenses: Map<string,CodeLens | null> = new Map<string,CodeLens | null>();
 
 export class CodelensProvider implements vscode.CodeLensProvider {
 
@@ -114,9 +114,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
     }
 
     private provideNativeMethodCodeLens(range: Range, hash: string, identifier: string, showPrefix: boolean) {
-        const type = expandedCodeLenses.some(id => id === identifier)
-                                ? CODELENS_TYPE.EXPANDED
-                                : CODELENS_TYPE.COLLAPSED;
+        const type = expandedCodeLenses.has(identifier) ? CODELENS_TYPE.EXPANDED : CODELENS_TYPE.COLLAPSED;
 
         const codeLens = this.nativeMethodsCodeLensFactory
                                 .addProvider(this)

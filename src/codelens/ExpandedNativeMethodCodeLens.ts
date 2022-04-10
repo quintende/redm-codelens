@@ -5,13 +5,13 @@ import AbstractNativeMethodCodeLens, { ResolvedData } from './AbstractNativeMeth
 
 export default class ExpandedNativeMethodCodeLens extends AbstractNativeMethodCodeLens {
   
-  constructor(range: Range, hash: string, identifier: string, showPrefix: boolean, cb?: Function) {
+  constructor(range: Range, hash: string, identifier: string, showPrefix: boolean, triggerProviderCompute?: Function) {
     super(
       range,
       hash,
       identifier,
       showPrefix,
-      cb  
+      triggerProviderCompute  
     );
 
   }
@@ -34,7 +34,7 @@ export default class ExpandedNativeMethodCodeLens extends AbstractNativeMethodCo
       tooltip: 'Click to collapse parameters',
       command: 'redm-codelens.showCollapsedNativeMethodCodeLens',
       arguments: [
-        this.identifier, this.cb
+        this, this.identifier, this.triggerProviderCompute
       ]
     });
   }
