@@ -1,6 +1,4 @@
-import { Func } from 'mocha';
 import { CodeLens as OriginalCodeLens, Command, Range } from 'vscode';
-import { snakeToPascalCase } from '../CodelensProvider';
 import { NativeMethod } from '../NativeMethodsRepository';
 
 export interface ResolvableData {
@@ -19,10 +17,10 @@ export default abstract class AbstractNativeMethodCodeLens extends OriginalCodeL
   protected hash: string;
   protected identifier: string;
   protected showPrefix: boolean;
-  protected cb: Function | undefined;
+  protected triggerProviderCompute: Function | undefined;
   protected _command: Command;
 
-  constructor(range: Range, hash: string, identifier: string, showPrefix: boolean = false, cb?: Function) {
+  constructor(range: Range, hash: string, identifier: string, showPrefix: boolean = false, triggerProviderCompute?: Function) {
     super(range);
 
     // We do not initialize the command here, because we want to be able to
@@ -36,7 +34,7 @@ export default abstract class AbstractNativeMethodCodeLens extends OriginalCodeL
     this.hash = hash;
     this.identifier = identifier;
     this.showPrefix = showPrefix;
-    this.cb = cb;
+    this.triggerProviderCompute = triggerProviderCompute;
   }
   
   abstract resolve(nativeMethod: NativeMethod | undefined) : void
@@ -55,6 +53,10 @@ export default abstract class AbstractNativeMethodCodeLens extends OriginalCodeL
 
   getHash() {
     return this.hash;
+  }
+
+  public getIdentifier() {
+    return this.identifier;
   }
 
   setShowPrefix(showPrefix: boolean) {

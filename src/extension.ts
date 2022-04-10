@@ -8,12 +8,14 @@ import {
     DocumentSelector,
     CodeLensProvider,
     TextEditor,
-    TextEditorEdit 
+    TextEditorEdit, 
+    CodeLens
 } from 'vscode';
 import CommandBuilder, { COMMAND, COMMAND_TYPE } from './commands/CommandBuilder';
 import { EVENT, NativeMethodsRepository } from './NativeMethodsRepository';
 import { CodelensProvider, expandedCodeLenses } from './CodelensProvider';
 import { compatibleFilesSelector } from './selectors/NativesSelectors';
+import AbstractNativeMethodCodeLens from './codelens/AbstractNativeMethodCodeLens';
 
 export function activate(context: ExtensionContext) {
 
@@ -89,16 +91,15 @@ export function activate(context: ExtensionContext) {
     );
 
     const toggleNativeMethodCodeLens = async (
-        identifier: string, isLongNativeMethod: boolean, cb: Function
+        identifier: string, codeLens: AbstractNativeMethodCodeLens, isLongNativeMethod: boolean
     ) => {   
-        if (!isLongNativeMethod) {
-            expandedCodeLenses.push(identifier);
-        } else {
-            const index = expandedCodeLenses.indexOf(identifier);
-            if (index !== -1) expandedCodeLenses.splice(index, 1);
-        }
+        if (isLongNativeMethod) {
+            expandedCodeLenses.delete(identifier);
 
-        cb();
+            return;
+        }
+        
+        expandedCodeLenses.set(identifier, codeLens);
     }
 
     commandBuilder.registerCommand(
@@ -108,9 +109,10 @@ export function activate(context: ExtensionContext) {
         },
         async (
             textEditor: TextEditor, edit: TextEditorEdit, 
-            identifier: string, cb: Function
+            codeLens: AbstractNativeMethodCodeLens, identifier: string, triggerProviderCompute: Function
         ) => {   
-            toggleNativeMethodCodeLens(identifier, false, cb);
+            toggleNativeMethodCodeLens(identifier, codeLens, false);
+            triggerProviderCompute();
         }
     );
 
@@ -121,10 +123,11 @@ export function activate(context: ExtensionContext) {
             type: COMMAND_TYPE.TEXT_EDITOR,
         },
         async (
-            textEditor: TextEditor, edit: TextEditorEdit, 
-            identifier: string, cb: Function
+            codeLens: CodeLens, textEditor: TextEditor, edit: TextEditorEdit, 
+            identifier: string, triggerProviderCompute: Function
         ) => {   
-            toggleNativeMethodCodeLens(identifier, true, cb);
+            toggleNativeMethodCodeLens(identifier, codeLens, true);
+            triggerProviderCompute();
         }
     );
 
