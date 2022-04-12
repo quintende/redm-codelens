@@ -60,6 +60,7 @@
         "onLanguage:typescript",
         "onLanguage:javascript",
         "onLanguage:lua",
+        "onLanguage:c",
         "onLanguage:csharp",
         "onCommand:redm-codelens.enable",
         "onCommand:redm-codelens.disable"

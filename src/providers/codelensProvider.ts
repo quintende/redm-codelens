@@ -30,6 +30,7 @@ export const kebabCase = (string: string) => string
 
 interface NativeInvokers {
     lua: RegExp;
+    c: RegExp;
     csharp: RegExp;
     typescript: RegExp;
     javascript: RegExp;
@@ -48,7 +49,7 @@ const proxy = (fn: any): any => {
 
 type Language = 'lua' | 'csharp' | 'typescript' | 'javascript';
 
-const filterHash = (hash: string) => hash.replace(/['"`]+/g, '');
+const filterHash = (hash: string) => hash.replace(/[_'"`]+/g, '');
 
 export const expandedCodeLenses: Map<string,CodeLens | null> = new Map<string,CodeLens | null>();
 
@@ -57,6 +58,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
     private codeLenses: vscode.CodeLens[] = [];
     private nativeInvokers: NativeInvokers;
     private _onDidChangeCodeLenses: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
+ 
     public nativeMethodsRepository: NativeMethodsRepository;
     public nativeMethodsCodeLensFactory: NativeMethodCodeLensFactory;
     public readonly onDidChangeCodeLenses: vscode.Event<void> = this._onDidChangeCodeLenses.event;
@@ -65,6 +67,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
         // Move
         this.nativeInvokers = {
             lua: /Citizen\.InvokeNative\((.*?)[,)]/g,
+            c: /::(_0x.*?)\(/g,
             csharp: /Function\.Call<?(.*?)>?\(\(Hash\)(.*?)[,)]/g,
             javascript: /Citizen\.invokeNative\((.*?)[,)]/g,
             typescript: /Citizen\.invokeNative<?(.*?)>?\((.*?)[,)]/g
@@ -72,7 +75,6 @@ export class CodelensProvider implements vscode.CodeLensProvider {
 
         this.nativeMethodsRepository = new NativeMethodsRepository();
         this.nativeMethodsCodeLensFactory = new NativeMethodCodeLensFactory().addProvider(this);
-
 
         this.nativeMethodsRepository.on(EVENT.NATIVES_FETCH_SUCCESS, proxy(this._onDidChangeCodeLenses.fire));
         vscode.window.onDidChangeTextEditorVisibleRanges(proxy(this._onDidChangeCodeLenses.fire));
