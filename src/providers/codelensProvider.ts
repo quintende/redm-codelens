@@ -45,7 +45,7 @@ const proxy = (fn: any): any => {
     console.log('Passing through proxy');
     
     return fn;
-}
+};
 
 type Language = 'lua' | 'csharp' | 'typescript' | 'javascript';
 
@@ -156,7 +156,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
 
             const line: TextLine = document.lineAt(document.positionAt(match.index as number).line);
             const hash: string = filterHash(_hash);
-            const identifier: string = kebabCase(`${line.lineNumber}-${line.text}`);
+            const identifier: string = kebabCase(`${line.lineNumber}-${line.text}-${match.index}`);
             const iterationContext: LineContextItem = {
                 hash, identifier
             };
@@ -170,7 +170,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
             );
             const range = document.getWordRangeAtPosition(position, regex);
             
-            if (!range || !visibleRanges)  continue;
+            if (!range || !visibleRanges)  {continue;}
 
             const isRangeVisible = true; // is broken -> visibleRanges.some((visibleRange: Range) => visibleRange.contains(range));
             const performanceMode = true;
