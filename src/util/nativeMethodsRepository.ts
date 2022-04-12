@@ -36,9 +36,9 @@ interface ServerResponse {
   
 type ServerData = Array<object>;
 
-type StorageResponse = STORAGE_STATE | null
+type StorageResponse = STORAGE_STATE | null;
 
-const logger = (...args: any[]) => {}
+const logger = (...args: any[]) => {};
 
 export class NativeMethodsRepository {
 
@@ -88,8 +88,8 @@ export class NativeMethodsRepository {
         const [rdrError, rdrResponse] = await to<ServerResponse>(axios.get(this.rdrNativesUrl));
         const [cfxError, cfxResponse] = await to<ServerResponse>(axios.get(this.cfxNativesUrl));
 
-        if (rdrError) throw rdrError;
-        if (cfxError) throw cfxError;
+        if (rdrError) {throw rdrError;}
+        if (cfxError) {throw cfxError;}
 
         const responseHash = `${hash(rdrResponse.data)}-${hash(cfxResponse.data)}`;
         const cachedHash = this.storageManager?.getValue<string>('hash', null);

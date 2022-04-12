@@ -54,7 +54,7 @@ export default class CodeLensContext {
     this.lines.set(
       context.identifier,
       { line: line, contexts: [ context ] }
-    )
+    );
   }
 
   private updateLineContext(lineContextItem: LineContextItem) {
