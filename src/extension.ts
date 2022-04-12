@@ -23,13 +23,13 @@ export function activate(context: ExtensionContext) {
 
     nativeMethodsRepository
         .on(EVENT.NATIVES_FETCH_FAILED,
-            () => { window.showErrorMessage( "Failed to fetch native methods." ) })
+            () => { window.showErrorMessage( "Failed to fetch native methods." ); })
         .on(EVENT.NATIVES_FETCH_FALLBACK,
-            (date: string) => { window.showWarningMessage( `Failed to fetch updated native methods. Will use fallback to natives from ${date}.` ) })
+            (date: string) => { window.showWarningMessage( `Failed to fetch updated native methods. Will use fallback to natives from ${date}.` ); })
         .on(EVENT.NATIVES_FETCH_SUCCESS,
-            () => { window.showInformationMessage( "Native methods fetched successfully." ) })
+            () => { window.showInformationMessage( "Native methods fetched successfully." ); })
         .on(EVENT.NATIVES_FETCH_UPDATED,
-            () => { window.showInformationMessage( "Native methods updated successfully." ) });
+            () => { window.showInformationMessage( "Native methods updated successfully." ); });
 
     const commandBuilder: CommandBuilder = new CommandBuilder();
 
@@ -67,7 +67,7 @@ export function activate(context: ExtensionContext) {
                 )
                 : { hash:  urls[0] };
 
-            if (!hashTarget) return;
+            if (!hashTarget) {return;}
             
             if (!showMultipleMethods) {
                 env.openExternal(Uri.parse(hashTarget.hash));
@@ -100,7 +100,7 @@ export function activate(context: ExtensionContext) {
         }
         
         expandedCodeLenses.set(identifier, codeLens);
-    }
+    };
 
     commandBuilder.registerCommand(
         {

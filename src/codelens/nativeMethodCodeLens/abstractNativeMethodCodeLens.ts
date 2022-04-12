@@ -37,7 +37,7 @@ export default abstract class AbstractNativeMethodCodeLens extends OriginalCodeL
     this.triggerProviderCompute = triggerProviderCompute;
   }
   
-  abstract resolve(nativeMethod: NativeMethod | undefined) : void
+  abstract resolve(nativeMethod: NativeMethod | undefined) : void;
 
   public static isInstance(_instance: any) {
     return this.name === _instance.constructor.name;
