@@ -1,7 +1,7 @@
 import { Command, Range } from "vscode";
 import { snakeToPascalCase } from "../../providers/codelensProvider";
 import { NativeMethod } from "../../util/nativeMethodsRepository";
-import AbstractNativeMethodCodeLens, { ResolvedData } from './abstractNativeMethodCodeLens';
+import AbstractNativeMethodCodeLens from './abstractNativeMethodCodeLens';
 
 export default class ExpandedNativeMethodCodeLens extends AbstractNativeMethodCodeLens {
   
