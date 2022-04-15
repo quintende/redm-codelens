@@ -7,6 +7,7 @@ import * as hash from 'object-hash';
 //import { context } from 'vscode';
 
 export interface NativeMethod {
+    hash: string;
     name: string;
     params: [
         {
@@ -76,6 +77,7 @@ export class NativeMethodsRepository {
 
             for (const [key, { name, params, return_type }] of natives) {
                 this.storageManager?.setValue<NativeMethod>(key, {
+                    hash: key,
                     name,
                     params,
                     return_type
@@ -109,7 +111,7 @@ export class NativeMethodsRepository {
     }
 
     async initialiseRepository(storage: Memento) {
-        const hashMatch = '0x275F255ED201B937';
+        const hashMatch = '0x275F255ED201B937'; // TODO
         const hasGlobalStorageHit = storage.get(hashMatch) !== undefined;
 
         this.storageManager = new LocalStorageService(storage);
@@ -147,7 +149,17 @@ export class NativeMethodsRepository {
 
     }
 
-    public get(hash: string): NativeMethod {
+    public get(hashes: string | string[]): NativeMethod | NativeMethod[] {
+        if (typeof hashes === 'string') {
+            return this.getDataFromStorage(hashes);
+        }
+
+        return hashes.map(
+            (hash: string) => this.getDataFromStorage(hash)
+        );
+    }
+
+    public getDataFromStorage(hash: string): NativeMethod {
         if (!this.storageManager) {
             throw new Error('Storage manager is not initialised');
         }
