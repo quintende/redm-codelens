@@ -1,33 +1,23 @@
 import { CodeLens, Range } from 'vscode';
 import { snakeToPascalCase } from '../providers/codelensProvider';
 import { NativeMethod } from '../util/nativeMethodsRepository';
+import AbstractCodeLens from './abstractCodeLens';
 import { CustomTextLine, LineContextItem } from './util/codeLensContext';
 
 const searchQuery: string = 'https://vespura.com/doc/natives/?_';
 
 
-export default class NativeDocumentationCodeLens extends CodeLens {
-  private hashes: string[] = [];
-
+export default class NativeDocumentationCodeLens extends AbstractCodeLens {
   constructor(range: Range, hash: string) {
-    const url = `${searchQuery}${hash}`;
-
-    super(range, {
-      title: 'Documentation',
-      arguments: [
-        false, [ url ]
-      ],
-      command: 'redm-codelens.openDocumentation',
-      tooltip: url
-    });
-  }
-  public static isInstance(_instance: any) {
-    return this.name === _instance.constructor.name;
+    super(
+      range,
+      hash,
+      Math.random().toString()
+    );
   }
 
   update(lineContext: any) {
-    const urls = lineContext.map(({ hash }: LineContextItem) => hash);
-    this.hashes = urls;
+    this.hash = lineContext.map(({ hash }: LineContextItem) => hash);;
 
     // @ts-ignore
     // this.command = {
@@ -38,10 +28,6 @@ export default class NativeDocumentationCodeLens extends CodeLens {
     // };
   }
 
-  getHash() {
-    return this.hashes;
-  }
-
   resolve(nativeMethod: NativeMethod | NativeMethod[] | undefined) {
     if (!nativeMethod) {
       return;
@@ -49,16 +35,19 @@ export default class NativeDocumentationCodeLens extends CodeLens {
 
     const nativeMethods = Array.isArray(nativeMethod) ? nativeMethod : [ nativeMethod ];
 
-    const parsedNativeMethods = nativeMethods.map((nativeMethod: NativeMethod) => ({
+    /*const parsedNativeMethods = nativeMethods.map((nativeMethod: NativeMethod) => ({
       ... nativeMethod,
       name: `${snakeToPascalCase(nativeMethod.name)} (${nativeMethod.name})`
-    }));  
+    }));  */
 
     // @ts-ignore
     this.command = {
       ... this.command,
+      title: 'Documentation',
+      command: 'redm-codelens.openDocumentation',
+      tooltip: 'Clickt to open documentation in browser',
       arguments: [
-        parsedNativeMethods.length > 1, parsedNativeMethods
+        nativeMethods.length > 1, nativeMethods
       ]
     };
   }
