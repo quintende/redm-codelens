@@ -12,7 +12,7 @@ import {
     CodeLens
 } from 'vscode';
 import CommandBuilder, { COMMAND, COMMAND_TYPE } from './commands/commandBuilder';
-import { EVENT, NativeMethodsRepository } from './util/nativeMethodsRepository';
+import { EVENT, NativeMethod, NativeMethodsRepository } from './util/nativeMethodsRepository';
 import { CodelensProvider, expandedCodeLenses } from './providers/codelensProvider';
 import { compatibleFilesSelector } from './selectors/nativesSelectors';
 import AbstractNativeMethodCodeLens from './codelens/nativeMethodCodeLens/abstractNativeMethodCodeLens';
@@ -54,31 +54,39 @@ export function activate(context: ExtensionContext) {
 
     commandBuilder.registerCommand(
         COMMAND.OPEN_DOCUMENTATION,
-        async (showMultipleMethods: boolean, urls: string[]) => {
+        async (showMultipleMethods: boolean, nativeMethods: NativeMethod[]) => {
             // `${searchQuery}${hash}`
 
             const useDefaultUrl = true;
-            const hashTarget = (showMultipleMethods) 
+            const selectNativeMethod = (showMultipleMethods) 
                 ? await window.showQuickPick(
-                    urls.map(url => ({
-                        label: 'GetPlayerId', detail: url, hash: url 
-                    })),
+                    nativeMethods.map((nativeMethod: NativeMethod) => {
+                        //const url = `${searchQuery}${hash}`;
+                        const { name, hash } = nativeMethod;
+
+                        return {
+                            label: name, detail: hash, hash: hash, result: nativeMethod
+                        };
+                    }),
                     { title: 'Select a Native Method' }
                 )
-                : { hash:  urls[0] };
+                : { result: nativeMethods[0] };
 
-            if (!hashTarget) {return;}
+            if (!selectNativeMethod) {return;}
+
+            const { name, hash } = selectNativeMethod.result;
             
             if (!showMultipleMethods) {
-                env.openExternal(Uri.parse(hashTarget.hash));
+                env.openExternal(Uri.parse('https://vespura.com/doc/natives/?_' + hash));
                 return;
             }
 
+
             const target = await window.showQuickPick(
                 [
-                    { label: 'Vespura', detail: 'GetPlayerId', description: hashTarget.hash, url: 'https://vespura.com/doc/natives/?_' + hashTarget.hash },
-                    { label: 'Alloc8or', detail: 'GetPlayerId', description: hashTarget.hash, url: 'https://alloc8or.re/rdr3/nativedb/?n=' + hashTarget.hash },
-                    { label: 'RDR2MODS',  detail: 'GetPlayerId',description: hashTarget.hash,  url: 'https://www.rdr2mods.com/nativedb/search/?s=' + hashTarget.hash },
+                    { label: 'Vespura', detail: name, description: hash, url: 'https://vespura.com/doc/natives/?_' + hash },
+                    { label: 'Alloc8or', detail: name, description: hash, url: 'https://alloc8or.re/rdr3/nativedb/?n=' + hash },
+                    { label: 'RDR2MODS',  detail: name,description: hash,  url: 'https://www.rdr2mods.com/nativedb/search/?s=' + hash },
                 ],
                 { title: 'Select which documentation page you want to open' });
 

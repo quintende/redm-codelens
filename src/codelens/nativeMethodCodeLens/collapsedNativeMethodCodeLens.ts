@@ -20,6 +20,7 @@ export default class CollapsedNativeMethodCodeLens extends AbstractNativeMethodC
       return;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const { return_type, name } = nativeMethod;
     const convertedName = snakeToPascalCase(name);
 
