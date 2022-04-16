@@ -15,7 +15,7 @@
     },
     "homepage": "https://github.com/quintende/redm-codelens/blob/master/README.md",
     "engines": {
-        "vscode": "^1.66.0"
+        "vscode": "^1.63.0"
     },
     "version": "0.0.1",
     "main": "./out/extension.js",
