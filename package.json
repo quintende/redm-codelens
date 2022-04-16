@@ -23,7 +23,7 @@
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
-        "open-in-browser": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. .",
+        "open-in-browser": "vscode-test-web --extensionDevelopmentPath=. ./examples/",
         "pretest": "npm run compile && npm run lint",
         "lint": "eslint src --ext ts",
         "test": "node ./out/test/runTest.js",
