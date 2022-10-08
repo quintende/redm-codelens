@@ -1,5 +1,6 @@
 import { CodeLens, Range } from 'vscode';
 
+/* The abstract class for the CodeLens. */
 export default class SimpleTextCodeLens extends CodeLens {
   constructor(range: Range, text: string, tooltip?: string) {
 

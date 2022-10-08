@@ -12,14 +12,14 @@ export interface ResolvedData {
     nativeMethods: NativeMethod[];
 }
 
+/* The abstract class for the CodeLens. */
 export default abstract class AbstractCodeLens extends OriginalCodeLens {
 
   protected hash: string;
   protected identifier: string;
-  protected triggerProviderCompute: Function | undefined;
   protected _command: Command;
 
-  constructor(range: Range, hash: string, identifier: string, triggerProviderCompute?: Function) {
+  constructor(range: Range, hash: string, identifier: string) {
     super(range);
 
     // We do not initialize the command here, because we want to be able to
@@ -32,10 +32,9 @@ export default abstract class AbstractCodeLens extends OriginalCodeLens {
 
     this.hash = hash;
     this.identifier = identifier;
-    this.triggerProviderCompute = triggerProviderCompute;
   }
   
-  abstract resolve(nativeMethod: NativeMethod | NativeMethod[] | undefined) : void;
+  abstract resolve(nativeMethod: NativeMethod | undefined | (NativeMethod | undefined)[]) : void;
 
   public static isInstance(_instance: any) {
     return this.name === _instance.constructor.name;

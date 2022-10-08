@@ -13,11 +13,13 @@ import {
 } from 'vscode';
 import CommandBuilder, { COMMAND, COMMAND_TYPE } from './commands/commandBuilder';
 import { EVENT, NativeMethod, NativeMethodsRepository } from './util/nativeMethodsRepository';
-import { CodelensProvider, expandedCodeLenses } from './providers/codelensProvider';
+import { CodelensProvider, snakeToPascalCase } from './providers/codelensProvider';
 import { compatibleFilesSelector } from './selectors/nativesSelectors';
 import AbstractNativeMethodCodeLens from './codelens/nativeMethodCodeLens/abstractNativeMethodCodeLens';
 
 export function activate(context: ExtensionContext) {
+
+    console.log('starting extension');
 
     const nativeMethodsRepository = new NativeMethodsRepository(context);
 
@@ -65,7 +67,7 @@ export function activate(context: ExtensionContext) {
                         const { name, hash } = nativeMethod;
 
                         return {
-                            label: name, detail: hash, hash: hash, result: nativeMethod
+                            label: snakeToPascalCase(name), description: hash, detail: name, hash: hash, result: nativeMethod
                         };
                     }),
                     { title: 'Select a Native Method' }
@@ -84,9 +86,9 @@ export function activate(context: ExtensionContext) {
 
             const target = await window.showQuickPick(
                 [
-                    { label: 'Vespura', detail: name, description: hash, url: 'https://vespura.com/doc/natives/?_' + hash },
-                    { label: 'Alloc8or', detail: name, description: hash, url: 'https://alloc8or.re/rdr3/nativedb/?n=' + hash },
-                    { label: 'RDR2MODS',  detail: name,description: hash,  url: 'https://www.rdr2mods.com/nativedb/search/?s=' + hash },
+                    { label: 'Vespura', detail: 'https://vespura.com/doc/natives/', /* detail: name, description: hash, */ url: 'https://vespura.com/doc/natives/?_' + hash },
+                    { label: 'Alloc8or', detail: 'https://alloc8or.re/rdr3/nativedb/', /* detail: name, description: hash, */ url: 'https://alloc8or.re/rdr3/nativedb/?n=' + hash },
+                    { label: 'RDR2MODS', detail: 'https://www.rdr2mods.com/nativedb/', /* detail: name, description: hash, */  url: 'https://www.rdr2mods.com/nativedb/search/?s=' + hash },
                 ],
                 { title: 'Select which documentation page you want to open' });
 
@@ -98,45 +100,9 @@ export function activate(context: ExtensionContext) {
         }
     );
 
-    const toggleNativeMethodCodeLens = async (
-        identifier: string, codeLens: AbstractNativeMethodCodeLens, isLongNativeMethod: boolean
-    ) => {   
-        if (isLongNativeMethod) {
-            expandedCodeLenses.delete(identifier);
-
-            return;
-        }
-        
-        expandedCodeLenses.set(identifier, codeLens);
-    };
-
-    commandBuilder.registerCommand(
-        {
-            identifier: COMMAND.SHOW_EXPANDED_NATIVE_METHOD_CODE_LENS,
-            type: COMMAND_TYPE.TEXT_EDITOR,
-        },
-        async (
-            textEditor: TextEditor, edit: TextEditorEdit, 
-            codeLens: AbstractNativeMethodCodeLens, identifier: string, triggerProviderCompute: Function
-        ) => {   
-            toggleNativeMethodCodeLens(identifier, codeLens, false);
-            triggerProviderCompute();
-        }
-    );
-
-
-    commandBuilder.registerCommand(
-        {
-            identifier: COMMAND.SHOW_COLLAPSED_NATIVE_METHOD_CODE_LENS,
-            type: COMMAND_TYPE.TEXT_EDITOR,
-        },
-        async (
-            textEditor: TextEditor, edit: TextEditorEdit, 
-            codeLens: AbstractNativeMethodCodeLens, identifier: string, triggerProviderCompute: Function
-        ) => {   
-            toggleNativeMethodCodeLens(identifier, codeLens, true);
-            triggerProviderCompute();
-        }
+    commandBuilder.registerCommand( 
+        { identifier: 'requestCollapsedStateChange', type: COMMAND_TYPE.TEXT_EDITOR, },
+        async ( _te, _e, requestCollapsedStateChange: Function ) => requestCollapsedStateChange() 
     );
 
     const disposables = commandBuilder.getDisposables();

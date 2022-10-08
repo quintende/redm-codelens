@@ -3,25 +3,30 @@ import { snakeToPascalCase } from "../../providers/codelensProvider";
 import { NativeMethod } from "../../util/nativeMethodsRepository";
 import AbstractNativeMethodCodeLens from './abstractNativeMethodCodeLens';
 
+/* It's a code lens that shows the full signature of a native method */
 export default class ExpandedNativeMethodCodeLens extends AbstractNativeMethodCodeLens {
   
-  constructor(range: Range, hash: string, identifier: string, showPrefix: boolean, triggerProviderCompute?: Function) {
+  constructor(
+    range: Range, hash: string, identifier: string, showPrefix: boolean,
+    onCollapsedStateChange?: Function
+  ) {
     super(
       range,
       hash,
       identifier,
       showPrefix,
-      triggerProviderCompute  
+      onCollapsedStateChange  
     );
 
   }
 
-  resolve(nativeMethod: NativeMethod | undefined) {
+  resolve(nativeMethod: NativeMethod | undefined | (NativeMethod | undefined)[]) {
     if (!nativeMethod) {
       return;
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
+    // @ts-ignore -
     const { return_type, params, name } = nativeMethod;
     const convertedName = snakeToPascalCase(name);
 
@@ -33,9 +38,9 @@ export default class ExpandedNativeMethodCodeLens extends AbstractNativeMethodCo
     this.updateCommand({
       title: title,
       tooltip: 'Click to collapse parameters',
-      command: 'redm-codelens.showCollapsedNativeMethodCodeLens',
+      command: 'redm-codelens.requestCollapsedStateChange',
       arguments: [
-        this, this.identifier, this.triggerProviderCompute
+        this.requestCollapsedStateChange.bind(this)
       ]
     });
   }

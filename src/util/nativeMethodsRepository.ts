@@ -25,16 +25,18 @@ export enum EVENT {
     NATIVES_FETCH_FALLBACK
 }
 
+
 export enum STORAGE_STATE {
     STALE,
     NEW,
-    CACHED
+    CACHED,
+    FAILED
 }
 
 interface ServerResponse {
     data: ServerData
 }
-  
+
 type ServerData = Array<object>;
 
 type StorageResponse = STORAGE_STATE | null;
@@ -42,20 +44,13 @@ type StorageResponse = STORAGE_STATE | null;
 const logger = (...args: any[]) => {};
 
 export class NativeMethodsRepository {
-
     private static instance: NativeMethodsRepository;
-
     private readonly rdrNativesUrl: string = 'https://raw.githubusercontent.com/alloc8or/rdr3-nativedb-data/master/natives.json';
-
     private readonly cfxNativesUrl: string = 'https://runtime.fivem.net/doc/natives_cfx.json';
 
     /* Flag */
-    private isInitialised: boolean = false;
-
     private cache: Map<string, NativeMethod> = new Map<string, NativeMethod>();
-
-    private storageManager: LocalStorageService | undefined;
-
+    private storageManager?: LocalStorageService;
     private events: any = {};
 
     constructor(context?: ExtensionContext) {
@@ -86,12 +81,23 @@ export class NativeMethodsRepository {
         }
     }
 
+    public onFetchSuccessful(cb: Function) {
+        this.on(EVENT.NATIVES_FETCH_SUCCESS, cb);
+    }
+
     async fetchAndSaveNatives(): Promise<StorageResponse> {
         const [rdrError, rdrResponse] = await to<ServerResponse>(axios.get(this.rdrNativesUrl));
         const [cfxError, cfxResponse] = await to<ServerResponse>(axios.get(this.cfxNativesUrl));
 
-        if (rdrError) {throw rdrError;}
-        if (cfxError) {throw cfxError;}
+        if (rdrError || cfxError) {
+            return STORAGE_STATE.FAILED;
+        }
+
+        // TODO: tell user that natives couldn't be fetched. Sources couldn't be fetched.
+        // Give option to retry
+
+        // if (rdrError) throw rdrError;
+        // if (cfxError) throw cfxError;
 
         const responseHash = `${hash(rdrResponse.data)}-${hash(cfxResponse.data)}`;
         const cachedHash = this.storageManager?.getValue<string>('hash', null);
@@ -144,12 +150,9 @@ export class NativeMethodsRepository {
         if (response === STORAGE_STATE.CACHED) {
             console.log("Using cached data");
         }
-
-        this.isInitialised = true;
-
     }
 
-    public get(hashes: string | string[]): NativeMethod | NativeMethod[] {
+    public get(hashes: string | string[]): NativeMethod | undefined | (NativeMethod | undefined)[] {
         if (typeof hashes === 'string') {
             return this.getDataFromStorage(hashes);
         }
@@ -159,7 +162,7 @@ export class NativeMethodsRepository {
         );
     }
 
-    public getDataFromStorage(hash: string): NativeMethod {
+    public getDataFromStorage(hash: string): NativeMethod | undefined {
         if (!this.storageManager) {
             throw new Error('Storage manager is not initialised');
         }
@@ -174,10 +177,10 @@ export class NativeMethodsRepository {
             }
         }
 
-        return this.cache.get(hash) as NativeMethod;
+        return this.cache.get(hash);
     }
 
-    public on(event: EVENT, cb: (data: any) => void) {
+    public on(event: EVENT, cb: Function) {
         if (!this.events[event]) {
             this.events[event] = [];
         }

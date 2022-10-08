@@ -7,6 +7,7 @@ import { CustomTextLine, LineContextItem } from './util/codeLensContext';
 const searchQuery: string = 'https://vespura.com/doc/natives/?_';
 
 
+/* It's a code lens that shows the documentation of a native method */
 export default class NativeDocumentationCodeLens extends AbstractCodeLens {
   constructor(range: Range, hash: string) {
     super(
@@ -28,7 +29,7 @@ export default class NativeDocumentationCodeLens extends AbstractCodeLens {
     // };
   }
 
-  resolve(nativeMethod: NativeMethod | NativeMethod[] | undefined) {
+  resolve(nativeMethod: NativeMethod | undefined | (NativeMethod | undefined)[]) {
     if (!nativeMethod) {
       return;
     }
@@ -45,7 +46,7 @@ export default class NativeDocumentationCodeLens extends AbstractCodeLens {
       ... this.command,
       title: 'Documentation',
       command: 'redm-codelens.openDocumentation',
-      tooltip: 'Clickt to open documentation in browser',
+      tooltip: 'Click to open documentation in browser',
       arguments: [
         nativeMethods.length > 1, nativeMethods
       ]

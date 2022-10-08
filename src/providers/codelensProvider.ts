@@ -1,14 +1,15 @@
 import * as vscode from 'vscode';
-import { Range, TextLine, window } from 'vscode';
+import { CodeLensProvider, EventEmitter, Position, Range, TextLine, window, workspace } from 'vscode';
 import CollapsedNativeMethodCodeLens from '../codelens/nativeMethodCodeLens/collapsedNativeMethodCodeLens';
 import ExpandedNativeMethodCodeLens from '../codelens/nativeMethodCodeLens/expandedNativeMethodCodeLens';
 import NativeDocumentationCodeLens from '../codelens/nativeDocumentationCodeLens';
 import SimpleTextCodeLens from '../codelens/simpleTextCodeLens';
 import { EVENT, NativeMethodsRepository } from '../util/nativeMethodsRepository';
-import CodeLens from '../codelens/nativeMethodCodeLens/abstractNativeMethodCodeLens';
+import AbstractCodeLens from '../codelens/nativeMethodCodeLens/abstractNativeMethodCodeLens';
 import AbstractNativeMethodCodeLens from '../codelens/nativeMethodCodeLens/abstractNativeMethodCodeLens';
 import CodeLensContext, { LineContextItem } from '../codelens/util/codeLensContext';
 import NativeMethodCodeLensFactory from '../codelens/util/nativeCodeLensFactory';
+import ConfigurationManager from '../config/configurationManager';
 
 /**
  * CodelensProvider
@@ -36,32 +37,31 @@ interface NativeInvokers {
     javascript: RegExp;
 }
 
-export enum CODELENS_TYPE {
-    EXPANDED,
-    COLLAPSED
-}
+type RealNativeMethodCodeLens = 
+    | AbstractCodeLens 
+    | ExpandedNativeMethodCodeLens 
+    | CollapsedNativeMethodCodeLens;
 
-const proxy = (fn: any): any => {
-    console.log('Passing through proxy');
-    
-    return fn;
-};
+type NativeMethodCodeLens = 
+    | AbstractCodeLens 
+    | NativeDocumentationCodeLens 
+    | ExpandedNativeMethodCodeLens 
+    | CollapsedNativeMethodCodeLens
+    | SimpleTextCodeLens;
 
 type Language = 'lua' | 'csharp' | 'typescript' | 'javascript';
+type NativeRegexMatch = [matches: RegExpMatchArray[], regex: RegExp];
 
-const filterHash = (hash: string) => hash.replace(/[_'"`]+/g, '');
+const escapeHash = (hash: string) => hash.replace(/[_'"`]+/g, '');
+export class CodelensProvider implements CodeLensProvider {
 
-export const expandedCodeLenses: Map<string,CodeLens | null> = new Map<string,CodeLens | null>();
-
-export class CodelensProvider implements vscode.CodeLensProvider {
-
-    private codeLenses: vscode.CodeLens[] = [];
+    private codeLenses: NativeMethodCodeLens[] = [];
     private nativeInvokers: NativeInvokers;
-    private _onDidChangeCodeLenses: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
- 
+    private _onDidChangeCodeLenses: vscode.EventEmitter<any> = new EventEmitter<any>();
+
     public nativeMethodsRepository: NativeMethodsRepository;
     public nativeMethodsCodeLensFactory: NativeMethodCodeLensFactory;
-    public readonly onDidChangeCodeLenses: vscode.Event<void> = this._onDidChangeCodeLenses.event;
+    public readonly onDidChangeCodeLenses: vscode.Event<any> = this._onDidChangeCodeLenses.event;
 
     constructor() {
         // Move
@@ -76,11 +76,17 @@ export class CodelensProvider implements vscode.CodeLensProvider {
         this.nativeMethodsRepository = new NativeMethodsRepository();
         this.nativeMethodsCodeLensFactory = new NativeMethodCodeLensFactory().addProvider(this);
 
-        this.nativeMethodsRepository.on(EVENT.NATIVES_FETCH_SUCCESS, proxy(this._onDidChangeCodeLenses.fire));
-        vscode.window.onDidChangeTextEditorVisibleRanges(proxy(this._onDidChangeCodeLenses.fire));
-        vscode.workspace.onDidChangeConfiguration(proxy(this._onDidChangeCodeLenses.fire));
+        this.nativeMethodsRepository.onFetchSuccessful(this._onDidChangeCodeLenses.fire);
+        
+        window.onDidChangeTextEditorVisibleRanges(this._onDidChangeCodeLenses.fire);
+        workspace.onDidChangeConfiguration(this._onDidChangeCodeLenses.fire);
     }
 
+    /**
+     * It finds the last code lens of a given type and updates it
+     * @param {any[]} CodeLenses - An array of CodeLens classes.
+     * @param {any} context - The context object that is passed to the `provideCodeLenses` function.
+     */
     private findAndUpdatePreviousCodeLens<T extends { update: Function }>(CodeLenses: any[], context: any) {
         for (let i = this.codeLenses.length - 1; i >= 0; i--) {
             const codeLens: T = this.codeLenses[i] as any;
@@ -94,8 +100,18 @@ export class CodelensProvider implements vscode.CodeLensProvider {
         }
     }
 
-    private provideDocumentationCodeLens(range: Range, hash: string, context: any, doesLineIncludeCodeLens: boolean) {
-        if (doesLineIncludeCodeLens) {
+    /**
+     * If the line does not include a code lens, create a new code lens and add it to the list of code
+     * lenses
+     * @param {Range} range - The range of the code lens.
+     * @param {string} hash - The hash of the documentation.
+     * @param {any} context - This is the context of the current line.
+     * @param {boolean} doesLineAlreadyHaveCodeLens - This is a boolean that tells us if the line we're
+     * currently on has a code lens.
+     * @returns The code lens is being returned.
+     */
+    private provideDocumentationCodeLens(range: Range, hash: string, context: any, doesLineAlreadyHaveCodeLens: boolean) {
+        if (doesLineAlreadyHaveCodeLens) {
             this.findAndUpdatePreviousCodeLens<NativeDocumentationCodeLens>(
                 [ NativeDocumentationCodeLens ],
                 context
@@ -109,96 +125,117 @@ export class CodelensProvider implements vscode.CodeLensProvider {
         );
     }
 
+    /**
+     * It creates a new code lens and adds it to the list of code lenses
+     * @param {Range} range - The range of the code lens.
+     */
     private provideSkeletonCodeLens(range: Range) {
         this.codeLenses.push(
             new SimpleTextCodeLens(range, "...")
         );
     }
 
+    /**
+     * > It creates a new code lens, and if it's the first code lens in the file, it updates the previous
+     * code lens to show the prefix
+     * @param {Range} range - Range - the range of the code lens
+     * @param {string} hash - The hash of the method.
+     * @param {string} identifier - The name of the method
+     * @param {boolean} showPrefix - boolean - if true, the code lens will show the prefix "Native"
+     */
     private provideNativeMethodCodeLens(range: Range, hash: string, identifier: string, showPrefix: boolean) {
-        const type = expandedCodeLenses.has(identifier) ? CODELENS_TYPE.EXPANDED : CODELENS_TYPE.COLLAPSED;
 
         const codeLens = this.nativeMethodsCodeLensFactory
                                 .addProvider(this)
                                 .addParams(range, hash, identifier, showPrefix)    
-                                .create(type);
+                                .create();
 
+        // Show `0x4FA.. ~` prefix
         if (showPrefix) {
-            this.findAndUpdatePreviousCodeLens<AbstractNativeMethodCodeLens>(
+            this.findAndUpdatePreviousCodeLens(
                 [ CollapsedNativeMethodCodeLens, ExpandedNativeMethodCodeLens ],
                 { showPrefix: true }
             );
         }
 
-        this.codeLenses.push(
-            codeLens
-        );
+        if (codeLens) {
+            this.codeLenses.push(codeLens);
+        }
     }
 
+    private getNativeMethodsFromDocument({ languageId, getText }: vscode.TextDocument): NativeRegexMatch {
+        const text: string = getText();
+        const regex: RegExp = new RegExp(
+            this.nativeInvokers[languageId as Language]
+        );
+        
+        return [
+            [...text.matchAll(regex)],
+            regex
+        ];
+    }
+
+    /**
+     * > It takes a document, finds all the native invokers in it, and creates a code lens for each one
+     * @param document - vscode.TextDocument
+     * @returns An array of CodeLenses.
+     */
     public provideCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
-
-        if (!vscode.workspace.getConfiguration("redm-codelens").get("enableCodeLens", true)) {
-            return [];
-        }
-
         this.codeLenses = [];
+        
+        if (ConfigurationManager.getConfig('enabled', false)) {
+            return this.codeLenses;
+        }
 
         const visibleRanges: readonly Range[] | undefined = window?.activeTextEditor?.visibleRanges;
         const codeLensContext: CodeLensContext = new CodeLensContext();
-        const language: Language = document.languageId as Language;
-        const regex: RegExp = new RegExp(this.nativeInvokers[language]);
-        const text: string = document.getText();
-        const matches: RegExpMatchArray[] = [...text.matchAll(regex)];
-        
+        const [ matches, regex ] = this.getNativeMethodsFromDocument(document);
+
         for (const match of matches) {
             const [ result, ... matchGroups ] = match;
-            const [ _hash ] = matchGroups;
+            const [ hash ] = matchGroups;
 
             const line: TextLine = document.lineAt(document.positionAt(match.index as number).line);
-            const hash: string = filterHash(_hash);
+            const filteredHash: string = escapeHash(hash);
             const identifier: string = kebabCase(`${line.lineNumber}-${line.text}-${match.index}`);
             const iterationContext: LineContextItem = {
-                hash, identifier
+                hash: filteredHash, identifier
             };
             
-            const showPrefix: boolean = codeLensContext.currentLineEquals(line);
+            const showPrefix: boolean = codeLensContext.doesCurrentLineEqualTo(line);
             const context = codeLensContext.updateCurrentLine(line, iterationContext);
             
-            const position = new vscode.Position(
+            const position = new Position(
                 line.lineNumber,
                 line.text.indexOf(result)
             );
             const range = document.getWordRangeAtPosition(position, regex);
             
-            if (!range || !visibleRanges)  {continue;}
+            if (!range || !visibleRanges) continue;
 
-            const isRangeVisible = true; // is broken -> visibleRanges.some((visibleRange: Range) => visibleRange.contains(range));
-            const performanceMode = true;
-
-            this.provideDocumentationCodeLens(range, hash, context, showPrefix);
-
-            if (performanceMode &&!isRangeVisible) {
-                this.provideSkeletonCodeLens(range);
-                continue;
-            }
-
-            this.provideNativeMethodCodeLens(range, hash, identifier, showPrefix);   
+            this.provideDocumentationCodeLens(range, filteredHash, context, showPrefix); // TODO why context here
+            this.provideNativeMethodCodeLens(range, filteredHash, identifier, showPrefix); // TODO why identifier here
         }
 
         return this.codeLenses;
     }
 
-    public resolveCodeLens(codeLens: vscode.CodeLens, token: vscode.CancellationToken) {
-
-        if (!vscode.workspace.getConfiguration("redm-codelens").get("enableCodeLens", true)) {
-            return;
+    /**
+     * It takes a CodeLens object, gets the hash from it, uses the hash to get the data from the
+     * nativeMethodsRepository, and then uses the data to resolve the CodeLens
+     * @param codeLens - The CodeLens object that was created in the provideCodeLenses method.
+     * @param token - vscode.CancellationToken
+     * @returns The codeLens object is being returned.
+     */
+    public resolveCodeLens(codeLens: RealNativeMethodCodeLens, token: vscode.CancellationToken) {
+        if (ConfigurationManager.getConfig('enabled', false)) {
+            return codeLens; // TODO: what does token do?
         }
 
-        const hash = (codeLens as CodeLens).getHash();
+        const hash = codeLens.getHash();
         const data = this.nativeMethodsRepository.get(hash);
-
-        (codeLens as CodeLens).resolve(data);
+        codeLens.resolve(data);
             
         return codeLens;
-     }
+    }
 }
