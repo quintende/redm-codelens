@@ -45,7 +45,8 @@ export default class NativeMethodCodeLensFactory {
                 ... this.params,
                 () => {
                     this.cache.set(identifier, false);
-                    this.provider._onDidChangeCodeLenses.fire();
+                    this.provider.eventEmitter.fire();
+                    // this.provider.fireChangeCodeLenses();
                 }
             );
         }
@@ -54,7 +55,8 @@ export default class NativeMethodCodeLensFactory {
             ... this.params,
             () => {
                 this.cache.set(identifier, true);
-                this.provider._onDidChangeCodeLenses.fire();
+                this.provider.eventEmitter.fire();
+                // this.provider.fireChangeCodeLenses();
             }
         );
     }
