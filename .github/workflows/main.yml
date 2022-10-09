@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
 jobs:
   dispatch:
     runs-on: ubuntu-latest
@@ -15,7 +15,7 @@ jobs:
       - name: Install & Cache Deps
         uses: bahmutov/npm-install@v1.4.5
       - name: Build extension
-        run: INLINE_RUNTIME_CHUNK=false npm i -g vsce && tar -czvf vsix.tar.gz ./*.vsix
+        run: INLINE_RUNTIME_CHUNK=false && npm run package-web && npm i -g vsce && vsce package && ls -al ./ && tar -czvf vsix.tar.gz ./*.vsix
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -24,8 +24,8 @@ jobs:
         with:
           tag_name: '${{ github.ref }}'
           release_name: 'Release ${{ github.ref }}'
-          draft: true
-          prerelease: true
+          draft: false
+          prerelease: false
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
