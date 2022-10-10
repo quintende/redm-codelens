@@ -53,7 +53,7 @@ export class NativeMethodsRepository {
     private storageManager?: LocalStorageService;
     private events: any = {};
 
-    constructor(context?: ExtensionContext) {
+    constructor(context?: ExtensionContext, options?: any) {
         if (NativeMethodsRepository.instance) {
             return NativeMethodsRepository.instance;
         }

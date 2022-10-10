@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { CancellationToken, CodeLens, CodeLensProvider, Event, EventEmitter, Position, Range, TextDocument, TextLine, window, workspace } from 'vscode';
+import { CancellationToken, CodeLens, CodeLensProvider, Event, EventEmitter, ExtensionContext, Position, Range, TextDocument, TextLine, window, workspace } from 'vscode';
 import CollapsedNativeMethodCodeLens from '../codelens/nativeMethodCodeLens/collapsedNativeMethodCodeLens';
 import ExpandedNativeMethodCodeLens from '../codelens/nativeMethodCodeLens/expandedNativeMethodCodeLens';
 import NativeDocumentationCodeLens from '../codelens/nativeDocumentationCodeLens';
@@ -10,32 +10,15 @@ import AbstractNativeMethodCodeLens from '../codelens/nativeMethodCodeLens/abstr
 import CodeLensContext, { LineContextItem } from '../codelens/util/codeLensContext';
 import NativeMethodCodeLensFactory from '../codelens/util/nativeCodeLensFactory';
 import ConfigurationManager from '../config/configurationManager';
-import invokers from '../util/invokers';
+import { escapeHash, invokers, kebabCase } from '../util/helpers';
 
 /**
  * CodelensProvider
  */
 
-// Move
-export const snakeToPascalCase = (string: string) => string
-    .toLowerCase()
-    .replace(
-        /_(\w)/g,
-        ($, $1) => $1.toUpperCase()
-    );
-
-// Move
-export const kebabCase = (string: string) => string
-    .replace(/([a-z])([A-Z])/g, "$1-$2")
-    .replace(/[\s_]+/g, '-')
-    .toLowerCase();
-
+// lua, c, csharp, typescript, javascript
 interface NativeInvokers {
-    lua: RegExp;
-    c: RegExp;
-    csharp: RegExp;
-    typescript: RegExp;
-    javascript: RegExp;
+    [key: string]: RegExp;
 }
 
 type RealNativeMethodCodeLens = 
@@ -50,22 +33,30 @@ type NativeMethodCodeLens =
     | CollapsedNativeMethodCodeLens
     | SimpleTextCodeLens;
 
-type Language = 'lua' | 'csharp' | 'typescript' | 'javascript';
 type NativeRegexMatch = [matches: RegExpMatchArray[], regex: RegExp];
 
-const escapeHash = (hash: string) => hash.replace(/[_'"`]+/g, '').trim();
 export class CodelensProvider implements CodeLensProvider {
-
     private codeLenses: NativeMethodCodeLens[] = [];
     private nativeInvokers: NativeInvokers = invokers;
-    private nativeMethodsRepository: NativeMethodsRepository = new NativeMethodsRepository();
+    private nativeMethodsRepository: NativeMethodsRepository;
     private nativeMethodsCodeLensFactory: NativeMethodCodeLensFactory = new NativeMethodCodeLensFactory();
     
     public eventEmitter: EventEmitter<any> = new EventEmitter<any>();
     public fireChangeCodeLenses: (data: any) => void = this.eventEmitter.fire;
     public readonly onDidChangeCodeLenses: Event<any> = this.eventEmitter.event;
 
-    constructor() {
+    constructor(context: ExtensionContext) {
+        this.nativeMethodsRepository = new NativeMethodsRepository(context, {
+            onSuccess: ({ showInformationMessage }: any) => 
+                showInformationMessage( "Native methods fetched successfully."),
+            onFallback: ({ showWarningMessage }: any, date: string) => 
+                showWarningMessage( `Failed to fetch updated native methods. Will use fallback to natives from ${date}.` ),
+            onUpdated: ({ showInformationMessage }: any) => 
+                showInformationMessage( "Native methods updated successfully."),
+            onFail: ({ showErrorMessage }: any) => 
+                showErrorMessage( "Failed to fetch native methods." ),
+        });
+        
         this.nativeMethodsCodeLensFactory.addProvider(this);
         this.nativeMethodsRepository.onFetchSuccessful(this.fireChangeCodeLenses);
         
@@ -73,11 +64,10 @@ export class CodelensProvider implements CodeLensProvider {
         workspace.onDidChangeConfiguration(this.fireChangeCodeLenses);
     }
 
-    /**
-     * It finds the last code lens of a given type and updates it
-     * @param {any[]} CodeLenses - An array of CodeLens classes.
-     * @param {any} context - The context object that is passed to the `provideCodeLenses` function.
-     */
+    private isRenderBlocked() {
+        return ConfigurationManager.getConfig('enabled', false) || ConfigurationManager.getRuntimeConfig('renderCodeLens', false);
+    }
+
     private findAndUpdatePreviousCodeLens<T extends { update: Function }>(CodeLenses: any[], context: any) {
         for (let i = this.codeLenses.length - 1; i >= 0; i--) {
             const codeLens: T = this.codeLenses[i] as any;
@@ -91,16 +81,6 @@ export class CodelensProvider implements CodeLensProvider {
         }
     }
 
-    /**
-     * If the line does not include a code lens, create a new code lens and add it to the list of code
-     * lenses
-     * @param {Range} range - The range of the code lens.
-     * @param {string} hash - The hash of the documentation.
-     * @param {any} context - This is the context of the current line.
-     * @param {boolean} doesLineAlreadyHaveCodeLens - This is a boolean that tells us if the line we're
-     * currently on has a code lens.
-     * @returns The code lens is being returned.
-     */
     private provideDocumentationCodeLens(range: Range, hash: string, context: any, doesLineAlreadyHaveCodeLens: boolean) {
         if (doesLineAlreadyHaveCodeLens) {
             this.findAndUpdatePreviousCodeLens<NativeDocumentationCodeLens>(
@@ -116,24 +96,12 @@ export class CodelensProvider implements CodeLensProvider {
         );
     }
 
-    /**
-     * It creates a new code lens and adds it to the list of code lenses
-     * @param {Range} range - The range of the code lens.
-     */
     private provideSkeletonCodeLens(range: Range) {
         this.codeLenses.push(
             new SimpleTextCodeLens(range, "...")
         );
     }
 
-    /**
-     * > It creates a new code lens, and if it's the first code lens in the file, it updates the previous
-     * code lens to show the prefix
-     * @param {Range} range - Range - the range of the code lens
-     * @param {string} hash - The hash of the method.
-     * @param {string} identifier - The name of the method
-     * @param {boolean} showPrefix - boolean - if true, the code lens will show the prefix "Native"
-     */
     private provideNativeMethodCodeLens(range: Range, hash: string, identifier: string, showPrefix: boolean) {
 
         const codeLens = this.nativeMethodsCodeLensFactory
@@ -157,7 +125,7 @@ export class CodelensProvider implements CodeLensProvider {
     private getNativeMethodsFromDocument({ languageId, getText }: TextDocument): NativeRegexMatch {
         const text: string = getText();
         const regex: RegExp = new RegExp(
-            this.nativeInvokers[languageId as Language]
+            this.nativeInvokers[languageId]
         );
         
         return [
@@ -166,15 +134,10 @@ export class CodelensProvider implements CodeLensProvider {
         ];
     }
 
-    /**
-     * > It takes a document, finds all the native invokers in it, and creates a code lens for each one
-     * @param document - TextDocument
-     * @returns An array of CodeLenses.
-     */
     public provideCodeLenses(document: TextDocument): CodeLens[] | Thenable<CodeLens[]> {
         this.codeLenses = [];
         
-        if (ConfigurationManager.getConfig('enabled', false)) {
+        if (this.isRenderBlocked()) {
             return this.codeLenses;
         }
 
@@ -190,6 +153,10 @@ export class CodelensProvider implements CodeLensProvider {
 
             const line: TextLine = document.lineAt(document.positionAt(match.index as number).line);
             const filteredHash: string = escapeHash(hash);
+            // identifier -> generate hash based on native and params + number.
+            // That should be unique for 99% of the cases.
+            // If a line changes (changes params) check on line and hash
+            // If a line is moved check for closest matching hash.
             const identifier: string = kebabCase(`${line.lineNumber}-${line.text}-${match.index}`);
             const iterationContext: LineContextItem = {
                 hash: filteredHash, identifier
@@ -213,15 +180,8 @@ export class CodelensProvider implements CodeLensProvider {
         return this.codeLenses;
     }
 
-    /**
-     * It takes a CodeLens object, gets the hash from it, uses the hash to get the data from the
-     * nativeMethodsRepository, and then uses the data to resolve the CodeLens
-     * @param codeLens - The CodeLens object that was created in the provideCodeLenses method.
-     * @param token - CancellationToken
-     * @returns The codeLens object is being returned.
-     */
     public resolveCodeLens(codeLens: RealNativeMethodCodeLens, token: CancellationToken) {
-        if (ConfigurationManager.getConfig('enabled', false)) {
+        if (this.isRenderBlocked()) {
             return codeLens; // TODO: what does token do?
         }
 

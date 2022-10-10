@@ -5,60 +5,34 @@ import {
     languages,
     workspace,
     window,
-    DocumentSelector,
-    CodeLensProvider,
-    TextEditor,
-    TextEditorEdit, 
-    CodeLens
+    CodeLensProvider
 } from 'vscode';
 import CommandBuilder, { COMMAND, COMMAND_TYPE } from './commands/commandBuilder';
 import { EVENT, NativeMethod, NativeMethodsRepository } from './util/nativeMethodsRepository';
-import { CodelensProvider, snakeToPascalCase } from './providers/codelensProvider';
-import { compatibleFilesSelector } from './selectors/nativesSelectors';
-import AbstractNativeMethodCodeLens from './codelens/nativeMethodCodeLens/abstractNativeMethodCodeLens';
+import { CodelensProvider } from './providers/codelensProvider';
+import { selectors, snakeToPascalCase } from './util/helpers';
 
 export function activate(context: ExtensionContext) {
-
-    console.log('starting extension');
-
-    const nativeMethodsRepository = new NativeMethodsRepository(context);
-
-    nativeMethodsRepository
-        .on(EVENT.NATIVES_FETCH_FAILED,
-            () => { window.showErrorMessage( "Failed to fetch native methods." ); })
-        .on(EVENT.NATIVES_FETCH_FALLBACK,
-            (date: string) => { window.showWarningMessage( `Failed to fetch updated native methods. Will use fallback to natives from ${date}.` ); })
-        .on(EVENT.NATIVES_FETCH_SUCCESS,
-            () => { window.showInformationMessage( "Native methods fetched successfully." ); })
-        .on(EVENT.NATIVES_FETCH_UPDATED,
-            () => { window.showInformationMessage( "Native methods updated successfully." ); });
-
     const commandBuilder: CommandBuilder = new CommandBuilder();
+    const codelensProvider: CodeLensProvider = new CodelensProvider(context);
 
-    const codelensProvider: CodeLensProvider = new CodelensProvider();
-    const codelensSelector: DocumentSelector = compatibleFilesSelector;
-
-    languages.registerCodeLensProvider(codelensSelector, codelensProvider);
-    
-    commandBuilder.registerCommand(
+    commandBuilder.build(
         COMMAND.ENABLE,
         (namespace: string, config: string) => {
             workspace.getConfiguration(namespace).update(config, true, true);
         }
     );
 
-    commandBuilder.registerCommand(
+    commandBuilder.build(
         COMMAND.DISABLE,
         (namespace: string, config: string) => {
             workspace.getConfiguration(namespace).update(config, false, true);
         }
     );
 
-    commandBuilder.registerCommand(
+    commandBuilder.build(
         COMMAND.OPEN_DOCUMENTATION,
         async (showMultipleMethods: boolean, nativeMethods: NativeMethod[]) => {
-            // `${searchQuery}${hash}`
-
             const useDefaultUrl = true;
             const selectNativeMethod = (showMultipleMethods) 
                 ? await window.showQuickPick(
@@ -83,12 +57,11 @@ export function activate(context: ExtensionContext) {
                 return;
             }
 
-
             const target = await window.showQuickPick(
                 [
-                    { label: 'Vespura', detail: 'https://vespura.com/doc/natives/', /* detail: name, description: hash, */ url: 'https://vespura.com/doc/natives/?_' + hash },
-                    { label: 'Alloc8or', detail: 'https://alloc8or.re/rdr3/nativedb/', /* detail: name, description: hash, */ url: 'https://alloc8or.re/rdr3/nativedb/?n=' + hash },
-                    { label: 'RDR2MODS', detail: 'https://www.rdr2mods.com/nativedb/', /* detail: name, description: hash, */  url: 'https://www.rdr2mods.com/nativedb/search/?s=' + hash },
+                    { label: 'Vespura', detail: 'https://vespura.com/doc/natives/', url: 'https://vespura.com/doc/natives/?_' + hash },
+                    { label: 'Alloc8or', detail: 'https://alloc8or.re/rdr3/nativedb/', url: 'https://alloc8or.re/rdr3/nativedb/?n=' + hash },
+                    { label: 'RDR2MODS', detail: 'https://www.rdr2mods.com/nativedb/', url: 'https://www.rdr2mods.com/nativedb/search/?s=' + hash },
                 ],
                 { title: 'Select which documentation page you want to open' });
 
@@ -100,14 +73,14 @@ export function activate(context: ExtensionContext) {
         }
     );
 
-    commandBuilder.registerCommand( 
-        { identifier: 'requestCollapsedStateChange', type: COMMAND_TYPE.TEXT_EDITOR, },
-        async ( _te, _e, requestCollapsedStateChange: Function ) => requestCollapsedStateChange() 
+    commandBuilder.build( 
+        'requestCollapsedStateChange',
+        (requestCollapsedStateChange: Function ) => requestCollapsedStateChange() 
     );
 
-    const disposables = commandBuilder.getDisposables();
+    languages.registerCodeLensProvider(selectors, codelensProvider);
 
-    for(const disposable of disposables) {
+    for(const disposable of commandBuilder.getDisposables()) {
         context.subscriptions.push(disposable);
     }
 }

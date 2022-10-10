@@ -31,7 +31,7 @@ export default class CommandBuilder {
   
   constructor() { }
 
-  registerCommand(commandData: CommandConfig | commandIdentifier, callback: (...args: any[]) => any) {
+  build(commandData: CommandConfig | commandIdentifier, callback: (...args: any[]) => any) {
     const isTextEditorCommand = isCommandConfig(commandData);
 
     const { registerCommand, registerTextEditorCommand } = commands;

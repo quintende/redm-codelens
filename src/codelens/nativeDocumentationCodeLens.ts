@@ -1,5 +1,4 @@
 import { CodeLens, Range } from 'vscode';
-import { snakeToPascalCase } from '../providers/codelensProvider';
 import { NativeMethod } from '../util/nativeMethodsRepository';
 import AbstractCodeLens from './abstractCodeLens';
 import { CustomTextLine, LineContextItem } from './util/codeLensContext';
@@ -18,15 +17,7 @@ export default class NativeDocumentationCodeLens extends AbstractCodeLens {
   }
 
   update(lineContext: any) {
-    this.hash = lineContext.map(({ hash }: LineContextItem) => hash);;
-
-    // @ts-ignore
-    // this.command = {
-    //   ... this.command,
-    //   arguments: [
-    //     urls.length > 1, urls
-    //   ]
-    // };
+    this.hash = lineContext.map(({ hash }: LineContextItem) => hash);
   }
 
   resolve(nativeMethod: NativeMethod | undefined | (NativeMethod | undefined)[]) {
@@ -36,12 +27,6 @@ export default class NativeDocumentationCodeLens extends AbstractCodeLens {
 
     const nativeMethods = Array.isArray(nativeMethod) ? nativeMethod : [ nativeMethod ];
 
-    /*const parsedNativeMethods = nativeMethods.map((nativeMethod: NativeMethod) => ({
-      ... nativeMethod,
-      name: `${snakeToPascalCase(nativeMethod.name)} (${nativeMethod.name})`
-    }));  */
-
-    // @ts-ignore
     this.command = {
       ... this.command,
       title: 'Documentation',

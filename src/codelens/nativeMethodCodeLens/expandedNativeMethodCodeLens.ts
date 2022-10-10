@@ -1,5 +1,5 @@
 import { Command, Range } from "vscode";
-import { snakeToPascalCase } from "../../providers/codelensProvider";
+import { snakeToPascalCase } from "../../util/helpers";
 import { NativeMethod } from "../../util/nativeMethodsRepository";
 import AbstractNativeMethodCodeLens from './abstractNativeMethodCodeLens';
 

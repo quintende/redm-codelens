@@ -1,4 +1,6 @@
-export const compatibleFilesSelector = [
+import { DocumentSelector } from "vscode";
+
+export const compatibleFilesSelector: DocumentSelector = [
     { language: 'typescript', scheme: 'file' },
     { language: 'javascript', scheme: 'file' },
     { language: 'lua', scheme: 'file' },
