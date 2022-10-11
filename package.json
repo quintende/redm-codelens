@@ -33,7 +33,6 @@
         "package-web": "webpack --mode production --devtool hidden-source-map"
     },
     "dependencies": {
-        "@types/object-hash": "^2.2.1",
         "await-to-js": "^3.0.0",
         "axios": "^0.26.1",
         "object-hash": "^3.0.0"
@@ -42,6 +41,7 @@
         "@types/glob": "^7.2.0",
         "@types/mocha": "^9.1.0",
         "@types/node": "14.x",
+        "@types/object-hash": "^2.2.1",
         "@types/vscode": "^1.63.0",
         "@typescript-eslint/eslint-plugin": "^5.16.0",
         "@typescript-eslint/parser": "^5.16.0",
@@ -87,13 +87,49 @@
                 "title": "Disable",
                 "command": "redm-codelens.disable",
                 "category": "RedM Natives CodeLens"
+            },
+            {
+                "title": "Refresh",
+                "command": "redm-codelens.refresh",
+                "category": "RedM Natives CodeLens"
             }
         ],
         "configuration": {
+            "title": "RedM CodeLens",
             "properties": {
-                "redm-codelens.enable": {
+                "redmCodelens.documentation.renderCodelens": {
                     "type": "boolean",
-                    "default": true
+                    "default": true,
+                    "markdownDescription": "Controls whetever the `Documentation` CodeLens is shown."
+                },
+                "redmCodelens.documentation.links": {
+                    "type": "array",
+                    "default": [
+                        "https://vespura.com/doc/natives/?_${hash}",
+                        "https://alloc8or.re/rdr3/nativedb/?n=${hash}",
+                        "https://www.rdr2mods.com/nativedb/search/?s=${hash}"
+                    ],
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "markdownDescription": "Configure associated documentation dictionaries that have a builtin query link. Use `${hash}` for query string value."
+                },
+                "redmCodelens.documentation.showQuickPick": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "Controls whetever all documentation dictionaries are shown when clicking on the `Documentation` CodeLens. When disabled, the first item from `#redmCodelens.documentation.links#` will be used."
+                },
+                "redmCodelens.native.renderCodelens": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "Controls whetever the `SomeNativeMethod(id: number): void` Native Method CodeLens is shown."
+                },
+                "redmCodelens.native.showPrefix": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "Controls whetever a prefix `0x7265.. ~ SomeNativeMethod(id: number): void` is shown in the Native Method CodeLens when multiple native methods are used on the same line."
                 }
             }
         }
