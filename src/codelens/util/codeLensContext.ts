@@ -16,101 +16,67 @@ export interface CustomTextLine {
 }
 
 export default class CodeLensContext {
-  private lines: Map<string, any> = new Map<string, any>();
-  private _lastLine?: CustomTextLine;
+  private lines: Map<number, number> = new Map<number, number>();
+  private codelenses: Map<string, any> = new Map<string, any>();
 
   constructor() { }
 
-/**
- * If the current line is the same as the line passed in, return true, otherwise return false.
- * @param {TextLine} line - TextLine - The line to check against the current line.
- * @returns A boolean value.
- */
-  public doesCurrentLineEqualTo(line: TextLine) {
-    const currentLine = this.getCurrentLineContext();
+  /**
+   * If the current line is the same as the line passed in, return true, otherwise return false.
+   * @param {TextLine} line - TextLine - The line to check against the current line.
+   * @returns A boolean value.
+   */
+  public getLineState(line: TextLine) {
+    return {
+      showPrefix: (this.lines.get(line.lineNumber) ?? 0) >= 2
+    };
+  }
 
-    if (!currentLine) {
-      return false;
+  public resetAll() {
+    this.lines.clear();
+  }
+
+  private generateAndGetApproxCodeLensIdentifier(identifier: string) {
+    const [line, hash, params] = identifier.split('|');
+
+    for (const key of this.codelenses.keys()) {
+      if (key.includes(`${line}|${hash}`) || key.includes(`${hash}|${params}`)) {
+        const value = this.codelenses.get(key);
+        
+        this.codelenses.set(identifier, value);
+        this.codelenses.delete(key);
+
+        return value;
+      }
     }
     
-    return currentLine.line.lineNumber === line.lineNumber;
+    return null;
   }
 
-/**
- * > It updates the current line context
- * @param {TextLine} line - TextLine - this is the line that is being updated
- * @param {LineContextItem} lineContextItem - LineContextItem
- * @returns The contexts of the last line.
- */
-  public updateCurrentLine(line: TextLine, lineContextItem: LineContextItem) {
-    if (this._lastLine && this._lastLine.line.lineNumber === line.lineNumber) {
-      this.updateLineContext(lineContextItem);
-
-      const _we = [...this.lines][this.lines.size-1][1];
-      return _we.contexts;
+  public getCodeLensState(identifier: string) {
+    const hasCodeLens = this.codelenses.has(identifier);
+    
+    
+    if (hasCodeLens) {
+      return this.codelenses.get(identifier);
     }
 
-    this.initialiseLineContext(line, lineContextItem);
-
-
-    const _we = [...this.lines][this.lines.size-1][1];
-    return _we.contexts;
+    // TODO: to performance heavy -- should move to 'resolveCodeLens'
+    return this.generateAndGetApproxCodeLensIdentifier(identifier); 
   }
 
-/**
- * It sets the current line context and adds the line to the lines map
- * @param {TextLine} line - The TextLine object that the context is being added to.
- * @param {LineContextItem} context - LineContextItem
- */
-  private initialiseLineContext(line: TextLine, context: LineContextItem) {
-    this._setCurrentLineContext({
-      line, context
+  public updateCurrentLine(identifier: string, line: TextLine, lineContextItem: LineContextItem) {
+    this.lines.set(
+      line.lineNumber,
+      (this.lines.get(line.lineNumber) ?? 0) + 1
+    );
+  }
+
+  public setCodeLensExpandedState(identifier: any, state: boolean) {
+    this.codelenses.set(identifier, {
+      isExpanded: state
     });
-    
-    this.lines.set(
-      context.identifier,
-      { line: line, contexts: [ context ] }
-    );
-  }
 
-/**
- * It takes a `LineContextItem` and adds it to the current line's context
- * @param {LineContextItem} lineContextItem - LineContextItem
- * @returns The current line context.
- */
-  private updateLineContext(lineContextItem: LineContextItem) {
-    const currentLine = this.getCurrentLineContext();
-
-    if (!currentLine) {
-      return;
-    }
-
-    const { identifier } = currentLine.context;
-    const currentLineContext = this.lines.get(identifier);
-
-
-    this.lines.set(
-      identifier,
-      { ... currentLineContext, 
-        contexts: [ ... currentLineContext.contexts, lineContextItem ] }
-    );
-  
-  }
-
-/**
- * > This function returns the last line of the file
- * @returns The last line of the file.
- */
-  public getCurrentLineContext() {
-    return this._lastLine; 
-  }
-
-/**
- * > This function sets the current line context
- * @param {CustomTextLine} line - CustomTextLine - The current line being processed.
- * @returns The last line of the text.
- */
-  public _setCurrentLineContext(line: CustomTextLine) {
-    return this._lastLine = line; 
+    console.log('setCodeLensExpandedState', identifier, state);
   }
 }

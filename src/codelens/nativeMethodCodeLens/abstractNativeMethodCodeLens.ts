@@ -21,8 +21,8 @@ export default abstract class AbstractNativeMethodCodeLens extends AbstractCodeL
     this.onCollapsedStateChange = onCollapsedStateChange;
   }
 
-  requestCollapsedStateChange() {
-    this.onCollapsedStateChange?.();
+  requestCollapsedStateChange(runtimeData: any) {
+    this.onCollapsedStateChange?.(runtimeData);
   }
 
   setShowPrefix(showPrefix: boolean) {

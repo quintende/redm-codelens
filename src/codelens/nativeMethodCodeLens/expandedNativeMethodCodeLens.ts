@@ -30,7 +30,8 @@ export default class ExpandedNativeMethodCodeLens extends AbstractNativeMethodCo
     const { return_type, params, name } = nativeMethod;
     const convertedName = snakeToPascalCase(name);
 
-    const prefix = this.showPrefix ? `${this.hash} ~ ` : '';
+    const hash = this.hash.substring(0, 8) + '...';
+    const prefix = this.showPrefix ? `${hash} ~ ` : '';
     const joinedParams = params.map((param: any) => `${param.name}: ${param.type}`).join(', ');
       
     const title = `${prefix}${convertedName}(${joinedParams}) : ${return_type}`;

@@ -10,7 +10,8 @@ import AbstractNativeMethodCodeLens from '../codelens/nativeMethodCodeLens/abstr
 import CodeLensContext, { LineContextItem } from '../codelens/util/codeLensContext';
 import NativeMethodCodeLensFactory from '../codelens/util/nativeCodeLensFactory';
 import ConfigurationManager from '../config/configurationManager';
-import { escapeHash, invokers, kebabCase } from '../util/helpers';
+import { escapeHash, generateIdentifier, invokers, kebabCase } from '../util/helpers';
+import NativeMethodCodeLens from '../codelens/nativeMethodCodeLens/nativeMethodCodeLens';
 
 /**
  * CodelensProvider
@@ -26,7 +27,7 @@ type RealNativeMethodCodeLens =
     | ExpandedNativeMethodCodeLens 
     | CollapsedNativeMethodCodeLens;
 
-type NativeMethodCodeLens = 
+type _NativeMethodCodeLens = 
     | AbstractCodeLens 
     | NativeDocumentationCodeLens 
     | ExpandedNativeMethodCodeLens 
@@ -36,7 +37,7 @@ type NativeMethodCodeLens =
 type NativeRegexMatch = [matches: RegExpMatchArray[], regex: RegExp];
 
 export class CodelensProvider implements CodeLensProvider {
-    private codeLenses: NativeMethodCodeLens[] = [];
+    private codeLenses: _NativeMethodCodeLens[] = [];
     private nativeInvokers: NativeInvokers = invokers;
     private nativeMethodsRepository: NativeMethodsRepository;
     private nativeMethodsCodeLensFactory: NativeMethodCodeLensFactory = new NativeMethodCodeLensFactory();
@@ -44,6 +45,7 @@ export class CodelensProvider implements CodeLensProvider {
     public eventEmitter: EventEmitter<any> = new EventEmitter<any>();
     public fireChangeCodeLenses: (data: any) => void = this.eventEmitter.fire;
     public readonly onDidChangeCodeLenses: Event<any> = this.eventEmitter.event;
+    public codeLensContext: CodeLensContext;
 
     constructor(context: ExtensionContext) {
         this.nativeMethodsRepository = new NativeMethodsRepository(context, {
@@ -57,6 +59,8 @@ export class CodelensProvider implements CodeLensProvider {
                 showErrorMessage( "Failed to fetch native methods." ),
         });
         
+        this.codeLensContext = new CodeLensContext();
+
         this.nativeMethodsCodeLensFactory.addProvider(this);
         this.nativeMethodsRepository.onFetchSuccessful(this.fireChangeCodeLenses);
         
@@ -81,9 +85,11 @@ export class CodelensProvider implements CodeLensProvider {
         }
     }
 
-    private provideDocumentationCodeLens(range: Range, hash: string, context: any, doesLineAlreadyHaveCodeLens: boolean) {
+    private provideDocumentationCodeLens(range: Range, context: LineContextItem, doesLineAlreadyHaveCodeLens: boolean, isAction: boolean) {
+        const { hash } = context;
+        
         if (doesLineAlreadyHaveCodeLens) {
-            this.findAndUpdatePreviousCodeLens<NativeDocumentationCodeLens>(
+            this.findAndUpdatePreviousCodeLens(
                 [ NativeDocumentationCodeLens ],
                 context
             );
@@ -96,23 +102,17 @@ export class CodelensProvider implements CodeLensProvider {
         );
     }
 
-    private provideSkeletonCodeLens(range: Range) {
-        this.codeLenses.push(
-            new SimpleTextCodeLens(range, "...")
-        );
-    }
-
-    private provideNativeMethodCodeLens(range: Range, hash: string, identifier: string, showPrefix: boolean) {
-
+    private provideNativeMethodCodeLens(range: Range, context: LineContextItem, showPrefix: boolean) { // isExpanded: boolean
+        const { identifier, hash } = context;
         const codeLens = this.nativeMethodsCodeLensFactory
                                 .addProvider(this)
-                                .addParams(range, hash, identifier, showPrefix)    
+                                .addParams(range, hash, identifier, showPrefix) // isExpanded
                                 .create();
 
         // Show `0x4FA.. ~` prefix
         if (showPrefix) {
             this.findAndUpdatePreviousCodeLens(
-                [ CollapsedNativeMethodCodeLens, ExpandedNativeMethodCodeLens ],
+                [ NativeMethodCodeLens ],
                 { showPrefix: true }
             );
         }
@@ -136,35 +136,34 @@ export class CodelensProvider implements CodeLensProvider {
 
     public provideCodeLenses(document: TextDocument): CodeLens[] | Thenable<CodeLens[]> {
         this.codeLenses = [];
+        this.codeLensContext.resetAll();
         
         if (this.isRenderBlocked()) {
             return this.codeLenses;
         }
 
         const visibleRanges: readonly Range[] | undefined = window?.activeTextEditor?.visibleRanges;
-        const codeLensContext: CodeLensContext = new CodeLensContext();
         const [ matches, regex ] = this.getNativeMethodsFromDocument(document);
 
         for (const match of matches) {
             const [ result, ... matchGroups ] = match;
             const [ firstMatch, secondMatch ] = matchGroups;
 
-            const hash = firstMatch.includes('0x') ? firstMatch : secondMatch;
+            //const hash = firstMatch.includes('0x') ? firstMatch : secondMatch;
+            const hash = firstMatch && secondMatch ? secondMatch : firstMatch;
 
             const line: TextLine = document.lineAt(document.positionAt(match.index as number).line);
             const filteredHash: string = escapeHash(hash);
-            // identifier -> generate hash based on native and params + number.
-            // That should be unique for 99% of the cases.
-            // If a line changes (changes params) check on line and hash
-            // If a line is moved check for closest matching hash.
-            const identifier: string = kebabCase(`${line.lineNumber}-${line.text}-${match.index}`);
+            const identifier = generateIdentifier(document, match, filteredHash);
             const iterationContext: LineContextItem = {
                 hash: filteredHash, identifier
             };
             
-            const showPrefix: boolean = codeLensContext.doesCurrentLineEqualTo(line);
-            const context = codeLensContext.updateCurrentLine(line, iterationContext);
+            this.codeLensContext.updateCurrentLine(identifier, line, iterationContext);
             
+            const lineState = this.codeLensContext.getLineState(line);
+            const isAction = false;
+
             const position = new Position(
                 line.lineNumber,
                 line.text.indexOf(result)
@@ -173,21 +172,29 @@ export class CodelensProvider implements CodeLensProvider {
             
             if (!range || !visibleRanges) continue;
 
-            this.provideDocumentationCodeLens(range, filteredHash, context, showPrefix); // TODO why context here
-            this.provideNativeMethodCodeLens(range, filteredHash, identifier, showPrefix); // TODO why identifier here
+            this.provideDocumentationCodeLens(range, iterationContext, lineState.showPrefix, isAction);
+            this.provideNativeMethodCodeLens(range, iterationContext, lineState.showPrefix);
         }
 
         return this.codeLenses;
     }
 
-    public resolveCodeLens(codeLens: RealNativeMethodCodeLens, token: CancellationToken) {
+    public resolveCodeLens(codeLens: RealNativeMethodCodeLens) {
         if (this.isRenderBlocked()) {
-            return codeLens; // TODO: what does token do?
+            return codeLens;
         }
 
         const hash = codeLens.getHash();
-        const data = this.nativeMethodsRepository.get(hash);
-        codeLens.resolve(data);
+        const identifier = codeLens.getIdentifier();
+        const nativeMethodData = this.nativeMethodsRepository.get(hash);
+        const runtimeData = this.codeLensContext.getCodeLensState(identifier);
+
+        if (!nativeMethodData) {
+            codeLens.resolve(nativeMethodData, runtimeData);
+            return codeLens;
+        }
+        
+        codeLens.resolve(nativeMethodData, runtimeData);
             
         return codeLens;
     }

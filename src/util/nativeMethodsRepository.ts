@@ -152,14 +152,16 @@ export class NativeMethodsRepository {
         }
     }
 
-    public get(hashes: string | string[]): NativeMethod | undefined | (NativeMethod | undefined)[] {
+    public get(hashes: string | string[]): NativeMethod| undefined {
         if (typeof hashes === 'string') {
             return this.getDataFromStorage(hashes);
         }
 
-        return hashes.map(
+        throw new Error('Tried to get hash as an array');
+
+        /*return hashes.map(
             (hash: string) => this.getDataFromStorage(hash)
-        );
+        );*/
     }
 
     public getDataFromStorage(hash: string): NativeMethod | undefined {
