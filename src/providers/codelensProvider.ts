@@ -10,8 +10,9 @@ import AbstractNativeMethodCodeLens from '../codelens/nativeMethodCodeLens/abstr
 import CodeLensContext, { LineContextItem } from '../codelens/util/codeLensContext';
 import NativeMethodCodeLensFactory from '../codelens/util/nativeCodeLensFactory';
 import ConfigurationManager from '../config/configurationManager';
-import { escapeHash, generateIdentifier, invokers, kebabCase } from '../util/helpers';
+import { escapeHash, generateIdentifier, kebabCase } from '../util/helpers';
 import NativeMethodCodeLens from '../codelens/nativeMethodCodeLens/nativeMethodCodeLens';
+import { invokers } from '../util/data';
 
 /**
  * CodelensProvider

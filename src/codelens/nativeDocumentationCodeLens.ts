@@ -1,4 +1,5 @@
 import { CodeLens, Range } from 'vscode';
+import CommandBuilder from '../commands/base/commandBuilder';
 import { NativeMethod } from '../util/nativeMethodsRepository';
 import AbstractCodeLens from './abstractCodeLens';
 import { CustomTextLine, LineContextItem } from './util/codeLensContext';
@@ -30,7 +31,7 @@ export default class NativeDocumentationCodeLens extends AbstractCodeLens {
     this.command = {
       ... this.command,
       title: 'Documentation',
-      command: 'redm-codelens.openDocumentation',
+      command: CommandBuilder.get('openDocumentation'),
       tooltip: 'Click to open documentation in browser',
       arguments: [
         nativeMethods.length > 1, nativeMethods

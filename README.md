@@ -23,8 +23,8 @@ Provides RedM Native Reference via CodeLens for Lua, JavaScript, TypeScript, C a
 ## Extension Settings
 
 The extensions includes following settings:
-* `redm-codelens.renderCodeLens`: enable/disable the rendering of the codelens for the native methods
-* `redm-codelens.showPrefix`: enable/disable if a prefix (`0xE820.. ~ `) needs to be shown when having multiple native methods on one line
+* `redmCodelens.renderCodeLens`: enable/disable the rendering of the codelens for the native methods
+* `redmCodelens.showPrefix`: enable/disable if a prefix (`0xE820.. ~ `) needs to be shown when having multiple native methods on one line
 
 ## Known Issues
 

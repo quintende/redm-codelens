@@ -73,24 +73,39 @@
         "onLanguage:lua",
         "onLanguage:c",
         "onLanguage:csharp",
-        "onCommand:redm-codelens.enable",
-        "onCommand:redm-codelens.disable"
+        "onCommand:redmCodelens.enable",
+        "onCommand:redmCodelens.disable"
     ],
     "contributes": {
         "commands": [
             {
                 "title": "Enable",
-                "command": "redm-codelens.enable",
+                "command": "redmCodelens.enable",
                 "category": "RedM Natives CodeLens"
             },
             {
                 "title": "Disable",
-                "command": "redm-codelens.disable",
+                "command": "redmCodelens.disable",
                 "category": "RedM Natives CodeLens"
             },
             {
-                "title": "Refresh",
-                "command": "redm-codelens.refresh",
+                "title": "Refresh Codelens rendering",
+                "command": "redmCodelens.refresh",
+                "category": "RedM Natives CodeLens"
+            },
+            {
+                "title": "Refetch CodeLens data",
+                "command": "redmCodelens.refresh",
+                "category": "RedM Natives CodeLens"
+            },
+            {
+                "title": "Collapse all parameters",
+                "command": "redmCodelens.refresh",
+                "category": "RedM Natives CodeLens"
+            },
+            {
+                "title": "Expand all parameters",
+                "command": "redmCodelens.refresh",
                 "category": "RedM Natives CodeLens"
             }
         ],

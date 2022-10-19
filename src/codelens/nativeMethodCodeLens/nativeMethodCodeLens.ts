@@ -1,4 +1,5 @@
 import { Range } from 'vscode';
+import CommandBuilder from '../../commands/base/commandBuilder';
 import { snakeToPascalCase } from '../../util/helpers';
 import { NativeMethod } from '../../util/nativeMethodsRepository';
 import AbstractNativeMethodCodeLens from './abstractNativeMethodCodeLens';
@@ -43,7 +44,7 @@ export default class NativeMethodCodeLens extends AbstractNativeMethodCodeLens {
     this.updateCommand({
       title: title,
       tooltip: 'Click to toggle parameters',
-      command: 'redm-codelens.requestCollapsedStateChange',
+      command: CommandBuilder.get('requestCollapsedStateChange'),
       arguments: [
         this.requestCollapsedStateChange.bind(this, runtimeData)
       ]

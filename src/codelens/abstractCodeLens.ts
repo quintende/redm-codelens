@@ -1,4 +1,5 @@
 import { CodeLens as OriginalCodeLens, Command, Range } from 'vscode';
+import CommandBuilder from '../commands/base/commandBuilder';
 import { NativeMethod } from '../util/nativeMethodsRepository';
 
 export interface ResolvableData {
@@ -27,14 +28,14 @@ export default abstract class AbstractCodeLens extends OriginalCodeLens {
     // the CodeLens will be marked as resolved.
     this._command = {
       title: 'No command defined',
-      command: 'redm-codelens.noAction'
+      command: CommandBuilder.get('noAction')
     };
 
     this.hash = hash;
     this.identifier = identifier;
   }
   
-  abstract resolve(nativeMethod: NativeMethod | undefined | (NativeMethod | undefined)[]) : void;
+  abstract resolve(nativeMethod: NativeMethod | undefined, runtimeData: any) : void;
 
   public static isInstance(_instance: any) {
     return this.name === _instance.constructor.name;

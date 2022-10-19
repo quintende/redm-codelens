@@ -1,4 +1,5 @@
 import { CodeLens, Range } from 'vscode';
+import CommandBuilder from '../commands/base/commandBuilder';
 
 /* The abstract class for the CodeLens. */
 export default class SimpleTextCodeLens extends CodeLens {
@@ -6,7 +7,7 @@ export default class SimpleTextCodeLens extends CodeLens {
 
     super(range, {
       title: text,
-      command: 'redm-codelens.noAction',
+      command: CommandBuilder.get('noAction'),
       tooltip: tooltip
     });
   }
