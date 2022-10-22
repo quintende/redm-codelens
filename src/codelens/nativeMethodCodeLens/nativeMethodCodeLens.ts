@@ -21,8 +21,9 @@ export default class NativeMethodCodeLens extends AbstractNativeMethodCodeLens {
 
   }
 
-  resolve(nativeMethodData: NativeMethod | undefined, runtimeData: any) {
-    if (!nativeMethodData) {
+  resolve(nativeMethodData: NativeMethod[], runtimeData: any) {
+    const [ _nativeMethodData ] = nativeMethodData;
+    if (!_nativeMethodData) {
       this.updateCommand({
         title: 'Hash does not exist!'
       });
@@ -30,7 +31,7 @@ export default class NativeMethodCodeLens extends AbstractNativeMethodCodeLens {
       return;
     }
     
-    const { return_type, params, name } = nativeMethodData;
+    const { return_type, params, name } = _nativeMethodData;
     const convertedName = snakeToPascalCase(name);
     const converedParams = ((ConfigurationManager.getRuntimeConfig('globalCodeLensFlag') === 'expandAll' ? true : undefined) ?? runtimeData?.isExpanded) 
                             ? params.map((param: any) => `${param.name}: ${param.type}`).join(', ')

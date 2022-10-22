@@ -17,10 +17,7 @@ export default class NativeDocumentationCodeLens extends AbstractCodeLens {
     this.hash = lineContext.hash; // lineContext.map(({ hash }: LineContextItem) => hash);
   }
 
-  resolve(nativeMethod: NativeMethod | undefined) { // | (NativeMethod | undefined)[]
-    const nativeMethods = nativeMethod === undefined
-                            ? [ { hash: this.hash } ]
-                            : Array.isArray(nativeMethod) ? nativeMethod : [ nativeMethod ];
+  resolve(nativeMethods: NativeMethod[]) { // | (NativeMethod | undefined)[]
 
     this.command = {
       ... this.command,

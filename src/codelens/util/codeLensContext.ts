@@ -18,7 +18,7 @@ export interface CustomTextLine {
 
 export default class CodeLensContext {
   private forceExpandedState?: boolean;
-  private lines: Map<number, number> = new Map<number, number>();
+  private lines: Map<number, any> = new Map<number, any>();
   private codelenses: Map<string, any> = new Map<string, any>();
 
   constructor() { }
@@ -28,9 +28,12 @@ export default class CodeLensContext {
    * @param {TextLine} line - TextLine - The line to check against the current line.
    * @returns A boolean value.
    */
-  public getLineState(line: TextLine) {
+  public getLineState(textLine: TextLine | number) {
+    const line = (typeof textLine === 'number') ? textLine : textLine.lineNumber;
+    
     return {
-      showPrefix: (this.lines.get(line.lineNumber) ?? 0) >= 2
+        hashes: this.lines.get(line) ?? [],
+        showPrefix: (this.lines.get(line)?.length ?? 0) >= 2
     };
   }
 
@@ -86,10 +89,12 @@ export default class CodeLensContext {
     return this.generateAndGetApproxCodeLensIdentifier(identifier); 
   }
 
-  public updateCurrentLine(line: TextLine) {
+  public updateCurrentLine(line: TextLine, hash: string) {
+    const lineData = this.lines.get(line.lineNumber);
+
     this.lines.set(
       line.lineNumber,
-      (this.lines.get(line.lineNumber) ?? 0) + 1
+      [ ...(lineData ?? []), { hash: hash } ]
     );
   }
 

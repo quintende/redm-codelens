@@ -160,7 +160,7 @@ export class CodelensProvider implements CodeLensProvider {
                 hash: filteredHash, identifier
             };
 
-            this.codeLensContext.updateCurrentLine(line);
+            this.codeLensContext.updateCurrentLine(line, filteredHash);
 
             const lineState = this.codeLensContext.getLineState(line);
             const isAction = false;
@@ -180,14 +180,21 @@ export class CodelensProvider implements CodeLensProvider {
         return this.codeLenses;
     }
 
+    private getHashesAtLCodeLensLine({ range }: CodeLens) {
+        const { hashes } =  this.codeLensContext.getLineState(range.start.line);
+
+        return hashes;
+    }
+
     public resolveCodeLens(codeLens: RealNativeMethodCodeLens) {
         if (this.isRenderBlocked()) {
             return codeLens;
         }
 
-        const hash = codeLens.getHash();
+        //const hash = codeLens.getHash();
+        const hashes = this.getHashesAtLCodeLensLine(codeLens);
         const identifier = codeLens.getIdentifier();
-        const nativeMethodData = this.nativeMethodsRepository.get(hash);
+        const nativeMethodData = hashes.map(({ hash }: any) => this.nativeMethodsRepository.get(hash));
         const runtimeData = this.codeLensContext.getCodeLensState(identifier);
         
         codeLens.resolve(nativeMethodData, runtimeData);

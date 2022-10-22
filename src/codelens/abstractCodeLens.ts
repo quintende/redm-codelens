@@ -35,7 +35,7 @@ export default abstract class AbstractCodeLens extends OriginalCodeLens {
     this.identifier = identifier;
   }
   
-  abstract resolve(nativeMethod: NativeMethod | undefined, runtimeData: any) : void;
+  abstract resolve(nativeMethod: NativeMethod[], runtimeData: any) : void;
 
   public static isInstance(_instance: any) {
     return this.name === _instance.constructor.name;
