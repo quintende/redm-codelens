@@ -1,4 +1,5 @@
 import { CodeLens, Range, TextLine } from 'vscode';
+import ConfigurationManager from '../../config/configurationManager';
 
 export interface LineContext {
   hashes: string[];
@@ -16,6 +17,7 @@ export interface CustomTextLine {
 }
 
 export default class CodeLensContext {
+  private forceExpandedState?: boolean;
   private lines: Map<number, number> = new Map<number, number>();
   private codelenses: Map<string, any> = new Map<string, any>();
 
@@ -32,7 +34,24 @@ export default class CodeLensContext {
     };
   }
 
+  private cleanUp() {
+    this.forceExpandedState = false;
+    ConfigurationManager.setRuntimeConfig('globalCodeLensFlag', undefined);
+  }
+
   public resetAll() {
+    const globalConfig = ConfigurationManager.getRuntimeConfig('globalCodeLensFlag');
+
+    this.cleanUp();
+
+    if (globalConfig === 'expandAll') {
+      this.forceExpandedState = true;
+    }
+
+    if (globalConfig === 'collapseAll') {
+      this.codelenses.clear();
+    }
+
     this.lines.clear();
   }
 
@@ -55,17 +74,19 @@ export default class CodeLensContext {
 
   public getCodeLensState(identifier: string) {
     const hasCodeLens = this.codelenses.has(identifier);
-    
-    
+
+    if (this.forceExpandedState) {
+      this.setCodeLensExpandedState(identifier, true);
+    }
+
     if (hasCodeLens) {
       return this.codelenses.get(identifier);
     }
 
-    // TODO: to performance heavy -- should move to 'resolveCodeLens'
     return this.generateAndGetApproxCodeLensIdentifier(identifier); 
   }
 
-  public updateCurrentLine(identifier: string, line: TextLine, lineContextItem: LineContextItem) {
+  public updateCurrentLine(line: TextLine) {
     this.lines.set(
       line.lineNumber,
       (this.lines.get(line.lineNumber) ?? 0) + 1
@@ -76,7 +97,5 @@ export default class CodeLensContext {
     this.codelenses.set(identifier, {
       isExpanded: state
     });
-
-    console.log('setCodeLensExpandedState', identifier, state);
   }
 }

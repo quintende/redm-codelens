@@ -73,40 +73,32 @@
         "onLanguage:lua",
         "onLanguage:c",
         "onLanguage:csharp",
-        "onCommand:redmCodelens.enable",
-        "onCommand:redmCodelens.disable"
+        "onCommand:redmCodelens.reload",
+        "onCommand:redmCodelens.refetch",
+        "onCommand:redmCodelens.collapseAll",
+        "onCommand:redmCodelens.expandAll"
     ],
     "contributes": {
         "commands": [
             {
-                "title": "Enable",
-                "command": "redmCodelens.enable",
-                "category": "RedM Natives CodeLens"
-            },
-            {
-                "title": "Disable",
-                "command": "redmCodelens.disable",
-                "category": "RedM Natives CodeLens"
-            },
-            {
-                "title": "Refresh Codelens rendering",
-                "command": "redmCodelens.refresh",
-                "category": "RedM Natives CodeLens"
+                "title": "Reload Codelens rendering",
+                "command": "redmCodelens.reload",
+                "category": "RedM CodeLens"
             },
             {
                 "title": "Refetch CodeLens data",
-                "command": "redmCodelens.refresh",
-                "category": "RedM Natives CodeLens"
+                "command": "redmCodelens.refetch",
+                "category": "RedM CodeLens"
             },
             {
                 "title": "Collapse all parameters",
-                "command": "redmCodelens.refresh",
-                "category": "RedM Natives CodeLens"
+                "command": "redmCodelens.collapseAll",
+                "category": "RedM CodeLens"
             },
             {
                 "title": "Expand all parameters",
-                "command": "redmCodelens.refresh",
-                "category": "RedM Natives CodeLens"
+                "command": "redmCodelens.expandAll",
+                "category": "RedM CodeLens"
             }
         ],
         "configuration": {
@@ -129,7 +121,7 @@
                     },
                     "minItems": 1,
                     "uniqueItems": true,
-                    "markdownDescription": "Configure associated documentation dictionaries that have a builtin query link. Use `${hash}` for query string value."
+                    "markdownDescription": "Configure associated documentation dictionaries that have a builtin query url. Use `${hash}` for query value."
                 },
                 "redmCodelens.documentation.showQuickPick": {
                     "type": "boolean",

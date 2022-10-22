@@ -1,11 +1,7 @@
-import { CodeLens, Range } from 'vscode';
+import { Range } from 'vscode';
 import CommandBuilder from '../commands/base/commandBuilder';
 import { NativeMethod } from '../util/nativeMethodsRepository';
 import AbstractCodeLens from './abstractCodeLens';
-import { CustomTextLine, LineContextItem } from './util/codeLensContext';
-
-const searchQuery: string = 'https://vespura.com/doc/natives/?_';
-
 
 /* It's a code lens that shows the documentation of a native method */
 export default class NativeDocumentationCodeLens extends AbstractCodeLens {
@@ -18,15 +14,13 @@ export default class NativeDocumentationCodeLens extends AbstractCodeLens {
   }
 
   update(lineContext: any) {
-    this.hash = lineContext.map(({ hash }: LineContextItem) => hash);
+    this.hash = lineContext.hash; // lineContext.map(({ hash }: LineContextItem) => hash);
   }
 
-  resolve(nativeMethod: NativeMethod | undefined | (NativeMethod | undefined)[]) {
-    if (!nativeMethod) {
-      return;
-    }
-
-    const nativeMethods = Array.isArray(nativeMethod) ? nativeMethod : [ nativeMethod ];
+  resolve(nativeMethod: NativeMethod | undefined) { // | (NativeMethod | undefined)[]
+    const nativeMethods = nativeMethod === undefined
+                            ? [ { hash: this.hash } ]
+                            : Array.isArray(nativeMethod) ? nativeMethod : [ nativeMethod ];
 
     this.command = {
       ... this.command,

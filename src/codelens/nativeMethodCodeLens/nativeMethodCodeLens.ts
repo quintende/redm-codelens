@@ -1,5 +1,6 @@
 import { Range } from 'vscode';
 import CommandBuilder from '../../commands/base/commandBuilder';
+import ConfigurationManager from '../../config/configurationManager';
 import { snakeToPascalCase } from '../../util/helpers';
 import { NativeMethod } from '../../util/nativeMethodsRepository';
 import AbstractNativeMethodCodeLens from './abstractNativeMethodCodeLens';
@@ -31,7 +32,7 @@ export default class NativeMethodCodeLens extends AbstractNativeMethodCodeLens {
     
     const { return_type, params, name } = nativeMethodData;
     const convertedName = snakeToPascalCase(name);
-    const converedParams = runtimeData?.isExpanded 
+    const converedParams = ((ConfigurationManager.getRuntimeConfig('globalCodeLensFlag') === 'expandAll' ? true : undefined) ?? runtimeData?.isExpanded) 
                             ? params.map((param: any) => `${param.name}: ${param.type}`).join(', ')
                             : '...';
 

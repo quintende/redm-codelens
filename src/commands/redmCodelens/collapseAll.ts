@@ -2,8 +2,8 @@ import ConfigurationManager from "../../config/configurationManager";
 import CommandBuilder from "../base/commandBuilder";
 
 export default CommandBuilder.build( 
-    'disable',
+    'collapseAll',
     () => {
-        ConfigurationManager.setConfig('enabled', false)
+        ConfigurationManager.setRuntimeConfig('globalCodeLensFlag', 'collapseAll')
     }
 );

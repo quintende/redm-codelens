@@ -5,7 +5,9 @@ type CommandIdentifier =
   | 'enable' 
   | 'disable' 
   | 'requestCollapsedStateChange' 
-  | 'openDocumentation';
+  | 'openDocumentation'
+  | 'collapseAll'
+  | 'expandAll';
 
 export default class CommandBuilder {
   static namespace: string = 'redmCodelens';

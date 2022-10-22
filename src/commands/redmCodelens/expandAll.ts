@@ -2,8 +2,8 @@ import ConfigurationManager from "../../config/configurationManager";
 import CommandBuilder from "../base/commandBuilder";
 
 export default CommandBuilder.build( 
-    'enable',
+    'expandAll',
     () => {
-        ConfigurationManager.setConfig('enabled', true)
+        ConfigurationManager.setRuntimeConfig('globalCodeLensFlag', 'expandAll')
     }
 );

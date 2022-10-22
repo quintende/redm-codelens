@@ -1,31 +1,44 @@
 import { workspace } from 'vscode';
 
+interface Config {
+    'documentation.renderCodelens': boolean;
+    'documentation.links': string[];
+    'documentation.showQuickPick': boolean;
+    'native.renderCodelens': boolean;
+    'native.showPrefix': boolean;
+};
+
+interface RuntimeConfig  {
+    'renderCodelens': boolean,
+    'globalCodeLensFlag'?: 'expandAll' | 'collapseAll',
+};
+
 export default class ConfigurationManager {
 
-    static userConfig;
     static appConfig;
-    static runtimeConfig: any;
+    static runtimeConfig: RuntimeConfig;
     
     static {
         this.runtimeConfig = {
             renderCodelens: false
         };
 
-        this.appConfig = workspace.getConfiguration('redm-codelens');
-        this.userConfig = workspace.getConfiguration('redm-codelens');
+        this.appConfig = workspace.getConfiguration('redmCodelens');
     }
 
-    static getConfig(key: string, condition: any) {
-        const config = this.appConfig.get(key);
+    static getConfig<T>(key: keyof Config): T | undefined {
+        const config = this.appConfig.get<T>(key);
 
-        if (!condition) {
-            return config;
-        }
+        return config;
+    }
+
+    static assertConfig(key: keyof Config, condition: any):  boolean {
+        const config = this.appConfig.get(key);
 
         return config === condition;
     }
 
-    static getRuntimeConfig(key: string, condition: any) {
+    static getRuntimeConfig(key: keyof RuntimeConfig, condition?: any) {
         const config = this.runtimeConfig[key];
         
         if (!condition) {
@@ -35,7 +48,12 @@ export default class ConfigurationManager {
         return config === condition;
     }
 
-    static setConfig(key: string, value: any) {
+    static setRuntimeConfig(key: keyof RuntimeConfig, value: any) {
+        // @ts-ignore
+        this.runtimeConfig[key] = value;
+    }
+
+    static setConfig(key: keyof Config, value: any) {
         this.appConfig.update(key, value);
     }
 }

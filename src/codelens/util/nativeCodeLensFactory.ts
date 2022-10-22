@@ -1,14 +1,11 @@
 import { CodeLensProvider, Range } from "vscode";
-import CollapsedNativeMethodCodeLens from "../nativeMethodCodeLens/collapsedNativeMethodCodeLens";
-import ExpandedNativeMethodCodeLens from "../nativeMethodCodeLens/expandedNativeMethodCodeLens";
 import NativeMethodCodeLens from "../nativeMethodCodeLens/nativeMethodCodeLens";
 
 type NativeMethodParameters = [
     range: Range, 
     hash: string, 
     identifier: string, 
-    showPrefix: boolean,
-    //isExpaned: boolean
+    showPrefix: boolean
 ];
 
 export default class NativeMethodCodeLensFactory {
@@ -45,22 +42,7 @@ export default class NativeMethodCodeLensFactory {
 
     public create(): NativeMethodCodeLens {
         const [ range, hash, identifier, showPrefix ] = this.getParams();
-        //const isExpanded = this.cache.get(identifier) === true;
 
-        
-        // this.cache.set(identifier, isExpanded);
-
-        // if (isExpanded) {
-        //     return new ExpandedNativeMethodCodeLens(
-        //         range, hash, identifier, showPrefix,
-        //         () => {
-        //             this.provider.codeLensContext.setCodeLensExpandedState(identifier, false);
-        //             // this.cache.set(identifier, false);
-        //             this.provider.eventEmitter.fire();
-        //         }
-        //     );
-        // }
-        
         return new NativeMethodCodeLens(
             range, hash, identifier, showPrefix,
             (runtimeData: any) => {

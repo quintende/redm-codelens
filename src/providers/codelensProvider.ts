@@ -70,7 +70,7 @@ export class CodelensProvider implements CodeLensProvider {
     }
 
     private isRenderBlocked() {
-        return ConfigurationManager.getConfig('enabled', false) || ConfigurationManager.getRuntimeConfig('renderCodeLens', false);
+        return ConfigurationManager.assertConfig('native.renderCodelens', false);
     }
 
     private findAndUpdatePreviousCodeLens<T extends { update: Function }>(CodeLenses: any[], context: any) {
@@ -107,7 +107,7 @@ export class CodelensProvider implements CodeLensProvider {
         const { identifier, hash } = context;
         const codeLens = this.nativeMethodsCodeLensFactory
                                 .addProvider(this)
-                                .addParams(range, hash, identifier, showPrefix) // isExpanded
+                                .addParams(range, hash, identifier, showPrefix)
                                 .create();
 
         // Show `0x4FA.. ~` prefix
@@ -159,9 +159,9 @@ export class CodelensProvider implements CodeLensProvider {
             const iterationContext: LineContextItem = {
                 hash: filteredHash, identifier
             };
-            
-            this.codeLensContext.updateCurrentLine(identifier, line, iterationContext);
-            
+
+            this.codeLensContext.updateCurrentLine(line);
+
             const lineState = this.codeLensContext.getLineState(line);
             const isAction = false;
 
@@ -189,11 +189,6 @@ export class CodelensProvider implements CodeLensProvider {
         const identifier = codeLens.getIdentifier();
         const nativeMethodData = this.nativeMethodsRepository.get(hash);
         const runtimeData = this.codeLensContext.getCodeLensState(identifier);
-
-        if (!nativeMethodData) {
-            codeLens.resolve(nativeMethodData, runtimeData);
-            return codeLens;
-        }
         
         codeLens.resolve(nativeMethodData, runtimeData);
             

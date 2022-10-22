@@ -4,8 +4,6 @@ import { LocalStorageService } from '../util/localStorageService';
 import to from 'await-to-js';
 import * as hash from 'object-hash';
 
-//import { context } from 'vscode';
-
 export interface NativeMethod {
     hash: string;
     name: string;
@@ -38,10 +36,8 @@ interface ServerResponse {
 }
 
 type ServerData = Array<object>;
-
 type StorageResponse = STORAGE_STATE | null;
 
-const logger = (...args: any[]) => {};
 
 export class NativeMethodsRepository {
     private static instance: NativeMethodsRepository;
@@ -102,7 +98,7 @@ export class NativeMethodsRepository {
         const responseHash = `${hash(rdrResponse.data)}-${hash(cfxResponse.data)}`;
         const cachedHash = this.storageManager?.getValue<string>('hash', null);
 
-        logger(`Fetched data with content hash: ${responseHash}`);
+        // console.log(`Fetched data with content hash: ${responseHash}`);
 
         if (cachedHash === responseHash) {
             return STORAGE_STATE.CACHED;
@@ -126,14 +122,14 @@ export class NativeMethodsRepository {
         
         if (error && !hasGlobalStorageHit) {
             this.trigger(EVENT.NATIVES_FETCH_FAILED);
-            logger(error);
+            // console.log(error);
 
             return;
         }
 
         if (error && hasGlobalStorageHit) {
             this.trigger(EVENT.NATIVES_FETCH_FALLBACK);
-            logger(error);
+            // console.log(error);
 
             return;
         }
