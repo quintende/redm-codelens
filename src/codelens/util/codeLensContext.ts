@@ -39,19 +39,19 @@ export default class CodeLensContext {
 
   private cleanUp() {
     this.forceExpandedState = false;
-    ConfigurationManager.setRuntimeConfig('globalCodeLensFlag', undefined);
+    ConfigurationManager.setRuntimeEvent(undefined);
   }
 
   public resetAll() {
-    const globalConfig = ConfigurationManager.getRuntimeConfig('globalCodeLensFlag');
+    const currentConfigEvent = ConfigurationManager.getRuntimeEvent();
 
     this.cleanUp();
 
-    if (globalConfig === 'expandAll') {
+    if (currentConfigEvent === 'expandAll') {
       this.forceExpandedState = true;
     }
 
-    if (globalConfig === 'collapseAll') {
+    if (currentConfigEvent === 'collapseAll') {
       this.codelenses.clear();
     }
 

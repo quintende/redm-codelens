@@ -10,12 +10,14 @@ interface Config {
 
 interface RuntimeConfig  {
     'renderCodelens': boolean,
-    'globalCodeLensFlag'?: 'expandAll' | 'collapseAll',
 };
+
+type RuntimeEvent = 'expandAll' | 'collapseAll' | 'reload' | 'refetch';
 
 export default class ConfigurationManager {
 
     static appConfig;
+    static currentRuntimeEvent: RuntimeEvent | undefined;
     static runtimeConfig: RuntimeConfig;
     
     static {
@@ -46,6 +48,14 @@ export default class ConfigurationManager {
         }
 
         return config === condition;
+    }
+
+    static getRuntimeEvent() {
+        return this.currentRuntimeEvent;
+    }
+
+    static setRuntimeEvent(key: RuntimeEvent | undefined) {
+        this.currentRuntimeEvent = key;
     }
 
     static setRuntimeConfig(key: keyof RuntimeConfig, value: any) {

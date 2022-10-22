@@ -49,6 +49,8 @@ export class NativeMethodsRepository {
     private storageManager?: LocalStorageService;
     private events: any = {};
 
+    public onRequestRefetch: Function = () => {};
+
     constructor(context?: ExtensionContext, options?: any) {
         if (NativeMethodsRepository.instance) {
             return NativeMethodsRepository.instance;
@@ -56,6 +58,8 @@ export class NativeMethodsRepository {
 
         if (context) {
             this.initialiseRepository(context.globalState);
+            this.onRequestRefetch = () => this.initialiseRepository(context.globalState);
+            
             NativeMethodsRepository.instance = this;
         }
     }
@@ -79,6 +83,7 @@ export class NativeMethodsRepository {
 
     public onFetchSuccessful(cb: Function) {
         this.on(EVENT.NATIVES_FETCH_SUCCESS, cb);
+        this.on(EVENT.NATIVES_FETCH_UPDATED, cb);
     }
 
     async fetchAndSaveNatives(): Promise<StorageResponse> {
@@ -113,6 +118,7 @@ export class NativeMethodsRepository {
     }
 
     async initialiseRepository(storage: Memento) {
+        console.log('initialiseRepository');
         const hashMatch = '0x275F255ED201B937'; // TODO
         const hasGlobalStorageHit = storage.get(hashMatch) !== undefined;
 
@@ -146,6 +152,8 @@ export class NativeMethodsRepository {
         if (response === STORAGE_STATE.CACHED) {
             console.log("Using cached data");
         }
+
+        return response;
     }
 
     public get(hashes: string | string[]): NativeMethod| undefined {

@@ -13,6 +13,7 @@ import ConfigurationManager from '../config/configurationManager';
 import { escapeHash, generateIdentifier, kebabCase } from '../util/helpers';
 import NativeMethodCodeLens from '../codelens/nativeMethodCodeLens/nativeMethodCodeLens';
 import { invokers } from '../util/data';
+import CommandBuilder from '../commands/base/commandBuilder';
 
 /**
  * CodelensProvider
@@ -58,6 +59,11 @@ export class CodelensProvider implements CodeLensProvider {
                 showInformationMessage( "Native methods updated successfully."),
             onFail: ({ showErrorMessage }: any) => 
                 showErrorMessage( "Failed to fetch native methods." ),
+        });
+        
+        CommandBuilder.on('executeRefetchRepository', () => {
+            this.nativeMethodsRepository.onRequestRefetch();
+            this.fireChangeCodeLenses(true);
         });
         
         this.codeLensContext = new CodeLensContext();
@@ -138,7 +144,7 @@ export class CodelensProvider implements CodeLensProvider {
     public provideCodeLenses(document: TextDocument): CodeLens[] | Thenable<CodeLens[]> {
         this.codeLenses = [];
         this.codeLensContext.resetAll();
-        
+               
         if (this.isRenderBlocked()) {
             return this.codeLenses;
         }

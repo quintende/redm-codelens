@@ -33,7 +33,7 @@ export default class NativeMethodCodeLens extends AbstractNativeMethodCodeLens {
     
     const { return_type, params, name } = _nativeMethodData;
     const convertedName = snakeToPascalCase(name);
-    const converedParams = ((ConfigurationManager.getRuntimeConfig('globalCodeLensFlag') === 'expandAll' ? true : undefined) ?? runtimeData?.isExpanded) 
+    const converedParams = ((ConfigurationManager.getRuntimeEvent() === 'expandAll' ? true : undefined) ?? runtimeData?.isExpanded) 
                             ? params.map((param: any) => `${param.name}: ${param.type}`).join(', ')
                             : '...';
 

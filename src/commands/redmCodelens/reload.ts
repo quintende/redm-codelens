@@ -2,8 +2,8 @@ import ConfigurationManager from "../../config/configurationManager";
 import CommandBuilder from "../base/commandBuilder";
 
 export default CommandBuilder.build( 
-    'expandAll',
+    'reload',
     () => {
-        ConfigurationManager.setRuntimeEvent('expandAll')
+        /* The `onCommand:redmCodelens.reload` will ensure when this command is called the codelens provider will run again */
     }
 );

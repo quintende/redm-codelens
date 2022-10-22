@@ -4,6 +4,6 @@ import CommandBuilder from "../base/commandBuilder";
 export default CommandBuilder.build( 
     'collapseAll',
     () => {
-        ConfigurationManager.setRuntimeConfig('globalCodeLensFlag', 'collapseAll')
+        ConfigurationManager.setRuntimeEvent('collapseAll')
     }
 );
