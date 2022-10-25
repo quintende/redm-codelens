@@ -1,7 +1,6 @@
 ![codelens-github-banner](https://user-images.githubusercontent.com/17977249/163669670-1e679bda-c9d4-4a84-b669-d864db9ff09b.png)
 
-The RedM CodeLens provides an easy way to see the Native Method when it is called via a Native Invoker. It provides you with the Native Method name and its parameters. No more searching of Native Methods with the `Documentation` CodeLens. You have direct access to your favourite Native Method documation website.
-
+The RedM CodeLens provides an easy way to see the Native Method when it is called via a Native Invoker. It provides you with the Native Method name and its parameters. No more searching for Native Methods is required, with the `Documentation` CodeLens you can easily find more information about a Native Method. You have direct access to your favourite Native Method documation website.
 
 ## Features
 
