@@ -4,15 +4,14 @@ RedM CodeLens provides RedM Native Reference via CodeLens for Lua, JavaScript, T
 
 ## Features
 
-![redm-codelens-demo](https://user-images.githubusercontent.com/17977249/197844138-e55db930-3e87-4030-b5ab-4030c8980fa3.png)
+* Show the matching method name for corresponding native hash via codelens above the Native Invoker line.
+* Provides RedM Native Reference via CodeLens for Lua, JavaScript, TypeScript, C and C# files in VS Code.
 
-Show the matching method name for corresponding native hash via codelens above the Native Invoker line.
+<p align="center">
+  <img width="700" src="https://user-images.githubusercontent.com/17977249/197844138-e55db930-3e87-4030-b5ab-4030c8980fa3.png">
+</p>
 
-![codelens](https://user-images.githubusercontent.com/17977249/194756103-91e1c52b-4f20-4fbe-b817-83ce22f520e0.png)
 
-Provides RedM Native Reference via CodeLens for Lua, JavaScript, TypeScript, C and C# files in VS Code.
-
-![examples](https://user-images.githubusercontent.com/17977249/194756889-00b710a1-4224-4fad-ba7f-6c595c7c6be4.png)
 
 
 ## Requirements
