@@ -4,6 +4,8 @@ RedM CodeLens provides RedM Native Reference via CodeLens for Lua, JavaScript, T
 
 ## Features
 
+![redm-codelens-demo](https://user-images.githubusercontent.com/17977249/197844138-e55db930-3e87-4030-b5ab-4030c8980fa3.png)
+
 Show the matching method name for corresponding native hash via codelens above the Native Invoker line.
 
 ![codelens](https://user-images.githubusercontent.com/17977249/194756103-91e1c52b-4f20-4fbe-b817-83ce22f520e0.png)
