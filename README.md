@@ -1,14 +1,18 @@
 ![codelens-github-banner](https://user-images.githubusercontent.com/17977249/163669670-1e679bda-c9d4-4a84-b669-d864db9ff09b.png)
 
-The RedM CodeLens provides an easy way to see the Native Method Reference when invoking a hash with the native method invoker. It will provide you with the corresponding native method name and and its parameters. No more searching native methods, with the `Documentation` CodeLens it will bring you directly to the corresponding documentation page.
+The RedM CodeLens provides an easy way to see the Native Method when it is called via a Native Invoker. It provides you with the Native Method name and its parameters. No more searching of Native Methods with the `Documentation` CodeLens. You have direct access to your favourite Native Method documation website.
 
-The CodeLens can be used on Lua, JavaScript, TypeScript, C and C# files in VS Code Desktop and VS Code web.
 
 ## Features
 
-* Show the matching method name for corresponding native hash via codelens above the Native Invoker line.
-* Provides RedM Native Reference via CodeLens for Lua, JavaScript, TypeScript, C and C# files in VS Code.
+* The CodeLens can be used for the following languages: Lua, JavaScript, TypeScript, C and C#
+* The extension can run on VS Code Desktop and VS Code Web
+* Show the matching Native Method name and parameters for corresponding Native Hash via the CodeLens above the Native Invoker line.
+* Direct access to any documentation website, as long as it has a query url that supports the hash
+* Enable or disable each part of the CodeLens rendering 
+* Personalize what documentation website you want to use
 
+&nbsp;
 <p align="center">
   <img width="700" src="https://user-images.githubusercontent.com/17977249/197844138-e55db930-3e87-4030-b5ab-4030c8980fa3.png">
 </p>
