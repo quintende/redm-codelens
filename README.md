@@ -26,9 +26,16 @@ The RedM CodeLens provides an easy way to see the Native Method when it is calle
 
 ## Extension Settings
 
-The extensions includes following settings:
-* `redmCodelens.renderCodeLens`: enable/disable the rendering of the codelens for the native methods
-* `redmCodelens.showPrefix`: enable/disable if a prefix (`0xE820.. ~ `) needs to be shown when having multiple native methods on one line
+##### `redmCodelens.documentation.renderCodelens`
+*Controls whetever the **Documentation** CodeLens is shown.*
+##### `redmCodelens.documentation.links` 
+*Configure associated documentation dictionaries that have a builtin query url. Use **${hash}** for query value.*
+##### `redmCodelens.documentation.showQuickPick`
+*Controls whetever all documentation dictionaries are shown when clicking on the **Documentation** CodeLens. When disabled, the first item from **redmCodelens.documentation.links** will be used.*
+##### `redmCodelens.native.renderCodelens`
+*Controls whetever the **SomeNativeMethod(id: number): void** Native Method CodeLens is shown.*
+##### `redmCodelens.native.showPrefix`
+*Controls whetever a prefix `0x7265.. ~ SomeNativeMethod(id: number): void` is shown in the Native Method CodeLens when multiple native methods are used on the same line.*
 
 ## Known Issues
 
