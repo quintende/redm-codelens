@@ -41,38 +41,47 @@ type NativeRegexMatch = [matches: RegExpMatchArray[], regex: RegExp];
 export class CodelensProvider implements CodeLensProvider {
     private codeLenses: _NativeMethodCodeLens[] = [];
     private nativeInvokers: NativeInvokers = invokers;
+    // @ts-ignore
     private nativeMethodsRepository: NativeMethodsRepository;
     private nativeMethodsCodeLensFactory: NativeMethodCodeLensFactory = new NativeMethodCodeLensFactory();
     
     public eventEmitter: EventEmitter<any> = new EventEmitter<any>();
     public fireChangeCodeLenses: (data: any) => void = this.eventEmitter.fire;
     public readonly onDidChangeCodeLenses: Event<any> = this.eventEmitter.event;
+    // @ts-ignore
     public codeLensContext: CodeLensContext;
 
     constructor(context: ExtensionContext) {
-        this.nativeMethodsRepository = new NativeMethodsRepository(context, {
-            onSuccess: ({ showInformationMessage }: any) => 
-                showInformationMessage( "Native methods fetched successfully."),
-            onFallback: ({ showWarningMessage }: any, date: string) => 
-                showWarningMessage( `Failed to fetch updated native methods. Will use fallback to natives from ${date}.` ),
-            onUpdated: ({ showInformationMessage }: any) => 
-                showInformationMessage( "Native methods updated successfully."),
-            onFail: ({ showErrorMessage }: any) => 
-                showErrorMessage( "Failed to fetch native methods." ),
-        });
-        
-        CommandBuilder.on('executeRefetchRepository', () => {
-            this.nativeMethodsRepository.onRequestRefetch();
-            this.fireChangeCodeLenses(true);
-        });
-        
-        this.codeLensContext = new CodeLensContext();
+        window.showInformationMessage('CodeLens Provider');
 
-        this.nativeMethodsCodeLensFactory.addProvider(this);
-        this.nativeMethodsRepository.onFetchSuccessful(this.fireChangeCodeLenses);
-        
-        window.onDidChangeTextEditorVisibleRanges(this.fireChangeCodeLenses);
-        workspace.onDidChangeConfiguration(this.fireChangeCodeLenses);
+        try {
+            this.nativeMethodsRepository = new NativeMethodsRepository(context, {
+                onSuccess: ({ showInformationMessage }: any) => 
+                    showInformationMessage( "Native methods fetched successfully."),
+                onFallback: ({ showWarningMessage }: any, date: string) => 
+                    showWarningMessage( `Failed to fetch updated native methods. Will use fallback to natives from ${date}.` ),
+                onUpdated: ({ showInformationMessage }: any) => 
+                    showInformationMessage( "Native methods updated successfully."),
+                onFail: ({ showErrorMessage }: any) => 
+                    showErrorMessage( "Failed to fetch native methods." ),
+            });
+            
+            CommandBuilder.on('executeRefetchRepository', () => {
+                this.nativeMethodsRepository.onRequestRefetch();
+                this.fireChangeCodeLenses(true);
+            });
+            
+            this.codeLensContext = new CodeLensContext();
+    
+            this.nativeMethodsCodeLensFactory.addProvider(this);
+            this.nativeMethodsRepository.onFetchSuccessful(this.fireChangeCodeLenses);
+            
+            window.onDidChangeTextEditorVisibleRanges(this.fireChangeCodeLenses);
+            workspace.onDidChangeConfiguration(this.fireChangeCodeLenses);
+        } catch (error) {
+            window.showInformationMessage('CodeLens Provider -- err');
+        }
+        window.showInformationMessage('CodeLens Provider -- end');
     }
 
     private isRenderBlocked() {
@@ -142,6 +151,7 @@ export class CodelensProvider implements CodeLensProvider {
     }
 
     public provideCodeLenses(document: TextDocument): CodeLens[] | Thenable<CodeLens[]> {
+        window.showInformationMessage('CodeLens:: provideCodeLenses');
         this.codeLenses = [];
         this.codeLensContext.resetAll();
                
@@ -156,9 +166,7 @@ export class CodelensProvider implements CodeLensProvider {
             const [ result, ... matchGroups ] = match;
             const [ firstMatch, secondMatch ] = matchGroups;
 
-            //const hash = firstMatch.includes('0x') ? firstMatch : secondMatch;
-            const hash = firstMatch && secondMatch ? secondMatch : firstMatch;
-
+            const hash = secondMatch ?? firstMatch;
             const line: TextLine = document.lineAt(document.positionAt(match.index as number).line);
             const filteredHash: string = escapeHash(hash);
             const identifier = generateIdentifier(document, match, filteredHash);
